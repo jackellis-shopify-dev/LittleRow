@@ -8,6 +8,7 @@
   @param {string} [class] - Additional CSS classes to apply to the button.
   @param {string} [id] - The ID attribute for the button.
   @param {string} [data_testid] - The data-testid attribute for testing.
+  @param {boolean} [notify_me] - Little Row: the variant is sold out and the button opens the Amp back in stock popup instead (see util-notify-me). It drops `name="add"`, which the Amp widget anchors its own button on.
 {%- enddoc -%}
 
 {%- liquid
@@ -27,15 +28,22 @@
     {% if id != blank %}
       id="{{ id }}"
     {% endif %}
-    type="submit"
-    name="add"
+    {% if notify_me %}
+      type="button"
+      data-notify-me
+      data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+      data-product-url="{{ product.url }}"
+    {% else %}
+      type="submit"
+      name="add"
+    {% endif %}
     ref="addToCartButton"
     on:click="/handleClick"
     class="button {{ class }}"
     {% if data_testid %}
       data-testid="{{ data_testid }}"
     {% endif %}
-    {% unless can_add_to_cart %}
+    {% unless can_add_to_cart or notify_me %}
       disabled
     {% endunless %}
   >
@@ -46,8 +54,19 @@
       >
         {{- 'icon-add-to-cart.svg' | inline_asset_content -}}
       </span>
+    {% elsif notify_me %}
+      <span
+        aria-hidden="true"
+        class="svg-wrapper add-to-cart-icon"
+      >
+        {{- 'icon-notify.svg' | inline_asset_content -}}
+      </span>
     {% endif %}
-    {{- add_to_cart_text | default: default_add_to_cart_text -}}
+    {%- if notify_me -%}
+      {{- 'content.notify_me' | t -}}
+    {%- else -%}
+      {{- add_to_cart_text | default: default_add_to_cart_text -}}
+    {%- endif -%}
     {% comment %} checkmark burst markup {% endcomment %}
     <span class="add-to-cart__added">
       <span class="svg-wrapper add-to-cart__added-icon">

@@ -1,0 +1,58 @@
+{%- doc -%}
+  Little Row: "+ £4.00 name on label" beside the product page price.
+
+  Rendered hidden by the price block when the product has a personalisation offer
+  (same checks as blocks/personalisation.liquid). personalisation.js shows it when a
+  name is applied and hides it again on remove. It sits outside the price block's
+  `priceContainer`, so it survives the price swap on variant change.
+
+  @param {product} product - The product the price belongs to
+{%- enddoc -%}
+
+{%- liquid
+  assign offer = product.metafields.custom.personalisation.value
+  assign fee_variant = offer.fee_variant.value
+  assign fee_price = fee_variant.price | money
+-%}
+
+{%- if offer != blank and fee_variant != blank and fee_variant.available and fee_variant.product.id != product.id -%}
+  <span
+    class="price__personalisation"
+    data-personalisation-price-note
+    hidden
+  >
+    {{- 'content.personalisation_price_note' | t: price: fee_price -}}
+  </span>
+{%- endif -%}
+
+{% stylesheet %}
+  /* .text-block is a flex column with full-width children, so while the note shows, lay the
+     price block out as a wrapping row: price and note share a line, anything else (tax note,
+     installments) keeps its full width and drops below. */
+  product-price:has(> .price__personalisation:not([hidden])) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: var(--horizontal-alignment, flex-start);
+    column-gap: var(--gap-xs);
+
+    &.text-center {
+      justify-content: center;
+    }
+
+    &.text-right {
+      justify-content: flex-end;
+    }
+
+    > :is([ref='priceContainer'], .price__personalisation) {
+      width: auto;
+      margin-inline: 0;
+    }
+  }
+
+  .price__personalisation {
+    font-size: min(0.85em, var(--font-paragraph--size));
+    color: rgb(var(--color-rgb, var(--color-foreground-rgb)) / var(--opacity-subdued-text));
+    white-space: nowrap;
+  }
+{% endstylesheet %}

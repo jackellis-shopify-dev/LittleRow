@@ -1,0 +1,160 @@
+{%- doc -%}
+  Little Row brand tokens. Rendered after `color-palette` so it can refine the values
+  Horizon derives from theme settings.
+
+  - Self-hosted Familjen Grotesk (body, UI, h3 and below) and Newsreader (h1–h2 only).
+    The font pickers in theme settings are all set to the system `sans_serif_n4` handle so
+    Horizon loads nothing extra; the families below replace them. Changing a font picker in
+    the theme editor has no visible effect while these overrides are in place.
+  - Self-hosted Dancing Script (`--font-script--family`), only for the personalisation preview.
+  - Self-hosted Rockwell Bold and Clarendon Bold (`--font-embroidery-{rockwell|clarendon}--family`),
+    the embroidery fonts a customer picks in the personalisation dialog.
+  - Brand palette and semantic surface/text tokens used by Little Row components.
+  - Button hovers: Horizon computes a lightness shift; the brand specifies ink-soft and sand.
+
+  Theme settings still in control: heading sizes, button text case (lowercase only on Default),
+  popover drop shadow. Not controllable: the font pickers (custom fonts aren't in Shopify's
+  library) and the brand palette tokens below.
+{%- enddoc -%}
+
+{{ 'familjen-grotesk.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2', crossorigin: 'anonymous' }}
+
+{% style %}
+  @font-face {
+    font-family: 'Familjen Grotesk';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('{{ 'familjen-grotesk.woff2' | asset_url }}') format('woff2');
+  }
+
+  @font-face {
+    font-family: 'Familjen Grotesk';
+    font-style: italic;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('{{ 'familjen-grotesk-italic.woff2' | asset_url }}') format('woff2');
+  }
+
+  @font-face {
+    font-family: 'Newsreader';
+    font-style: normal;
+    font-weight: 300 600;
+    font-display: swap;
+    src: url('{{ 'newsreader.woff2' | asset_url }}') format('woff2');
+  }
+
+  @font-face {
+    font-family: 'Newsreader';
+    font-style: italic;
+    font-weight: 300 500;
+    font-display: swap;
+    src: url('{{ 'newsreader-italic.woff2' | asset_url }}') format('woff2');
+  }
+
+  /* Dancing Script (OFL, latin subset): the "script" font of the personalisation embroidery
+     preview. Not preloaded; the browser only downloads it when the preview uses it. */
+  @font-face {
+    font-family: 'Dancing Script';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('{{ 'dancing-script.woff2' | asset_url }}') format('woff2');
+  }
+
+  /* Embroidery fonts (latin subset, bold only): the font choices in the personalisation dialog.
+     Not preloaded; they only download once the dialog shows text set in them. */
+  @font-face {
+    font-family: 'LR Rockwell';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('{{ 'rockwell-bold.woff2' | asset_url }}') format('woff2');
+  }
+
+  @font-face {
+    font-family: 'LR Clarendon';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('{{ 'clarendon-bold.woff2' | asset_url }}') format('woff2');
+  }
+
+  :root {
+    /* Base palette */
+    --lr-off-black: #1a1a1a;
+    --lr-warm-taupe: #a69f92;
+    --lr-soft-cream: #f2efe6;
+    --lr-sand: #dccab5;
+    --lr-white: #ffffff;
+
+    --lr-off-black-rgb: 26 26 26;
+    --lr-warm-taupe-rgb: 166 159 146;
+    --lr-soft-cream-rgb: 242 239 230;
+    --lr-sand-rgb: 220 202 181;
+    --lr-white-rgb: 255 255 255;
+
+    /* Tints derived from the brand colours */
+    --lr-cream-deep: #e8e3d6;
+    --lr-sand-light: #efe4d6;
+    --lr-taupe-light: #c9c3b8;
+    --lr-ink-soft: #3a3833;
+
+    /* Semantic surfaces + text */
+    --surface-page: var(--lr-soft-cream);
+    --surface-card: var(--lr-white);
+    --surface-sunken: var(--lr-cream-deep);
+    --surface-accent: var(--lr-sand);
+    --surface-inverse: var(--lr-off-black);
+
+    --text-body: var(--lr-off-black);
+    --text-subdued: var(--lr-ink-soft);
+    --text-muted: var(--lr-warm-taupe);
+    --text-on-inverse: var(--lr-soft-cream);
+    --text-on-accent: var(--lr-off-black);
+
+    --color-border: var(--lr-taupe-light);
+    --color-border-rgb: 201 195 184;
+    --color-shadow-rgb: var(--lr-off-black-rgb);
+
+    /* Buttons */
+    --color-primary-button-hover-background: var(--lr-ink-soft);
+    --color-primary-button-hover-text: var(--lr-soft-cream);
+    --color-primary-button-hover-border: var(--lr-ink-soft);
+    --color-secondary-button-hover-background: var(--lr-sand);
+    --color-secondary-button-hover-text: var(--lr-off-black);
+    --color-secondary-button-hover-border: var(--lr-off-black);
+    /* Brand voice is lowercase; only applied while the button "Text case" settings are on Default */
+    {%- if settings.button_text_case_primary != 'uppercase' %}
+      --button-text-case-primary: lowercase;
+    {%- endif %}
+    {%- if settings.button_text_case_secondary != 'uppercase' %}
+      --button-text-case-secondary: lowercase;
+    {%- endif %}
+
+    {%- if settings.popover_drop_shadow %}
+      --shadow-popover: 0 8px 24px rgb(var(--lr-off-black-rgb) / 0.08);
+    {%- endif %}
+
+    /* Type */
+    --font-body--family: 'Familjen Grotesk', 'Helvetica Neue', system-ui, sans-serif;
+    --font-body--weight: 400;
+    --font-body--style: normal;
+    --font-subheading--family: var(--font-body--family);
+    --font-subheading--weight: 500;
+    --font-subheading--style: normal;
+    --font-heading--family: 'Newsreader', Georgia, 'Times New Roman', serif;
+    --font-heading--weight: 500;
+    --font-heading--style: normal;
+    --font-accent--family: var(--font-heading--family);
+    --font-accent--weight: 500;
+    --font-accent--style: normal;
+    --font-script--family: 'Dancing Script', 'Snell Roundhand', cursive;
+    --font-embroidery-rockwell--family: 'LR Rockwell', Rockwell, 'Roboto Slab', serif;
+    --font-embroidery-clarendon--family: 'LR Clarendon', Clarendon, 'Century Schoolbook', serif;
+
+    /* h1–h6 sizes come from Theme settings → Typography */
+    --font-h3--weight: 600;
+    --font-h4--weight: 600;
+  }
+{% endstyle %}

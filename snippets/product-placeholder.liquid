@@ -1,0 +1,80 @@
+{%- doc -%}
+  Little Row stand-in for a product with no media: a tinted block with the monogram at 14%.
+  The tint cycles taupe → sand → cream by product id, so neighbouring cards vary but a product
+  always gets the same tint.
+
+  @param {object} [product] - The product being represented; seeds the tint.
+  @param {number} [index] - Seeds the tint when there is no product (e.g. editor preview cards).
+  @param {string} [aspect_ratio] - CSS aspect-ratio for the block. Defaults to 3 / 4.
+  @param {string} [class] - Additional classes.
+
+  @example
+  {% render 'product-placeholder', product: product, aspect_ratio: '4 / 5' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign tone_seed = product.id | default: index | default: 0
+  assign tone_index = tone_seed | modulo: 3
+
+  case tone_index
+    when 0
+      assign tone = 'taupe'
+    when 1
+      assign tone = 'sand'
+    else
+      assign tone = 'cream'
+  endcase
+
+  assign placeholder_ratio = aspect_ratio | default: '3 / 4'
+-%}
+
+<div
+  class="product-placeholder product-placeholder--{{ tone }}{% if class != blank %} {{ class }}{% endif %}"
+  style="--product-placeholder-ratio: {{ placeholder_ratio }};"
+  aria-hidden="true"
+>
+  <img
+    class="product-placeholder__mark"
+    src="{{ 'logo-monogram.png' | asset_url }}"
+    alt=""
+    width="367"
+    height="568"
+    loading="lazy"
+  >
+</div>
+
+{% stylesheet %}
+  .product-placeholder {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: var(--product-placeholder-ratio, 3 / 4);
+    overflow: hidden;
+    border-radius: var(--product-corner-radius, 0);
+    background-color: var(--product-placeholder-tone);
+  }
+
+  .product-placeholder--taupe {
+    --product-placeholder-tone: var(--lr-warm-taupe);
+  }
+
+  .product-placeholder--sand {
+    --product-placeholder-tone: var(--lr-sand-light);
+  }
+
+  .product-placeholder--cream {
+    --product-placeholder-tone: var(--lr-cream-deep);
+  }
+
+  .product-placeholder__mark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 34%;
+    width: auto;
+    max-width: none;
+    transform: translate(-50%, -50%);
+    opacity: 0.14;
+    pointer-events: none;
+  }
+{% endstylesheet %}

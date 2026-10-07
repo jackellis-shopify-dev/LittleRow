@@ -1,0 +1,3 @@
+/* Global reset — carried over from the theme's own assets/base.css (lines 1-3),
+   so consumers linking styles.css get the same box model as the storefront. */
+*{box-sizing:border-box}

@@ -1,0 +1,43 @@
+{%- doc -%}
+  Renders one colourway swatch: a link to the product in that colour.
+
+  The colour name is the part of the product title after " - " (e.g. "remy knitted two-piece - cream"
+  gives "cream"). Its swatch colour comes from the "Colour swatches" map in Theme settings → Swatches
+  (lines or commas of `name: #hex`). Names with no entry render an outlined empty swatch.
+
+  @param {object} product - The product this swatch links to.
+  @param {boolean} [current] - Whether this is the product being viewed.
+
+  @example
+  {% render 'colour-swatch', product: product, current: true %}
+{%- enddoc -%}
+
+{%- liquid
+  assign title_parts = product.title | split: ' - '
+  assign colour_name = ''
+  if title_parts.size > 1
+    assign colour_name = title_parts.last | strip | downcase
+  endif
+
+  capture swatch_hex
+    render 'util-colour-hex', name: colour_name
+  endcapture
+  assign swatch_hex = swatch_hex | strip
+
+  assign swatch_label = colour_name | default: product.title
+-%}
+
+<li class="colour-swatches__item">
+  <a
+    href="{{ product.url }}"
+    class="colour-swatches__swatch{% if current %} colour-swatches__swatch--current{% endif %}{% if swatch_hex == blank %} colour-swatches__swatch--unmapped{% endif %}"
+    {% if swatch_hex != blank %}
+      style="--swatch-colour: {{ swatch_hex }};"
+    {% endif %}
+    aria-label="{{ swatch_label | escape }}"
+    title="{{ swatch_label | escape }}"
+    {% if current %}
+      aria-current="page"
+    {% endif %}
+  ></a>
+</li>

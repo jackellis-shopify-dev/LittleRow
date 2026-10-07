@@ -1,0 +1,77 @@
+{%- doc -%}
+  Little Row stand-in for any empty media slot (hero, slideshow, image/media blocks, collection and
+  blog cards, video posters): a brand tint with the monogram centred at 34% height and 14% opacity.
+
+  Replaces Horizon's `placeholder_svg_tag` illustrations. It renders an inline <svg> carrying the
+  caller's class, so each site's existing sizing CSS (width/height 100%, absolute positioning)
+  still applies. `preserveAspectRatio="xMidYMid slice"` makes it cover its box like
+  `object-fit: cover`; the viewBox sets the intrinsic ratio where a site relies on it.
+
+  @param {string} [class] - Classes for the <svg> (use the class the site gave placeholder_svg_tag).
+  @param {string} [tone] - 'taupe' | 'sand' | 'cream'. Defaults to 'sand', or cycles by `index`.
+  @param {number} [index] - Cycles the tone (taupe → sand → cream) when `tone` isn't set.
+  @param {number} [width] - viewBox width. Defaults to 1300.
+  @param {number} [height] - viewBox height. Defaults to 730.
+  @param {string} [style] - Inline style for the <svg> (e.g. border variables from the caller).
+
+  @example
+  {% render 'brand-placeholder', class: 'hero__media' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign placeholder_tone = tone
+  if placeholder_tone == blank and index != blank
+    assign tone_index = index | plus: 0 | modulo: 3
+    case tone_index
+      when 0
+        assign placeholder_tone = 'taupe'
+      when 1
+        assign placeholder_tone = 'sand'
+      else
+        assign placeholder_tone = 'cream'
+    endcase
+  endif
+
+  case placeholder_tone
+    when 'taupe'
+      assign placeholder_fill = 'var(--lr-warm-taupe)'
+    when 'cream'
+      assign placeholder_fill = 'var(--lr-cream-deep)'
+    else
+      assign placeholder_fill = 'var(--lr-sand-light)'
+  endcase
+
+  assign viewbox_width = width | default: 1300
+  assign viewbox_height = height | default: 730
+  assign mark_height = viewbox_height | times: 0.34
+  assign mark_y = viewbox_height | times: 0.33
+-%}
+
+<svg
+  class="brand-placeholder{% if class != blank %} {{ class }}{% endif %}"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 {{ viewbox_width }} {{ viewbox_height }}"
+  preserveAspectRatio="xMidYMid slice"
+  {% if style != blank %}
+    style="{{ style }}"
+  {% endif %}
+  aria-hidden="true"
+  focusable="false"
+>
+  <rect
+    x="-100%"
+    y="-100%"
+    width="300%"
+    height="300%"
+    style="fill: {{ placeholder_fill }};"
+  />
+  <image
+    href="{{ 'logo-monogram.png' | asset_url }}"
+    x="0"
+    y="{{ mark_y }}"
+    width="{{ viewbox_width }}"
+    height="{{ mark_height }}"
+    preserveAspectRatio="xMidYMid meet"
+    opacity="0.14"
+  />
+</svg>

@@ -1,5 +1,8 @@
 {% doc %}
-  Renders the predictive search empty state
+  Renders the predictive search empty state.
+
+  Recently viewed products are fetched by predictive-search.js and inserted into
+  `#predictive-search-products`; when there are none, the "start typing" hint shows instead.
 
   @param {number} shadow_opacity - shadow opacity for the empty state container shadow
   @param {string} products_test_id - a playwright test id, used to differentiate empty state from 'real' search results
@@ -13,32 +16,20 @@
   id="predictive-search-results"
   class="predictive-search-dropdown"
   role="listbox"
-  aria-expanded="true"
+  aria-label="{{ 'content.search_results_label' | t }}"
   style="--color-shadow: rgb(var(--color-foreground-rgb) / {{ shadow_opacity }});"
 >
   {% if load_empty_state %}
     <div class="predictive-search-results__inner">
-      {% liquid
-        assign collection = settings.empty_state_collection | default: collections.all
-        assign default_title = 'content.search_results_resource_products' | t
-        assign title = settings.empty_state_collection.title | default: default_title
-      %}
-      {% paginate collection.products by 4 %}
-        {% assign products = collection.products %}
-        {% comment %} Only show products section if there are products to display {% endcomment %}
-        {% if products.size > 0 %}
-          {% render 'predictive-search-products-list',
-            products_test_id: products_test_id,
-            title: title,
-            products: products,
-            limit: 4
-          %}
-        {% else %}
-          <div class="predictive-search-results__no-results">
-            <p>{{ 'content.no_products_found' | t }}</p>
-          </div>
-        {% endif %}
-      {% endpaginate %}
+      <div
+        id="predictive-search-products"
+        class="predictive-search-results__products"
+        data-testid="{{ products_test_id }}"
+      >
+        <p class="predictive-search-results__title predictive-search-results__hint">
+          {{- 'content.search_start_typing' | t -}}
+        </p>
+      </div>
     </div>
   {% endif %}
 </div>

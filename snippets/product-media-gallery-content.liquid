@@ -333,16 +333,56 @@
   :root { --gallery-media-border-radius: {{ block_settings.media_radius }}px; }
 {% endstyle %}
 
-{% if closest.product == blank %}
+{% if closest.product == blank or sorted_media.size == 0 %}
+  {%- comment -%}
+    Little Row: no photography yet (or no product in the editor), so show labelled brand
+    placeholders in the gallery's own layout. Desktop follows the grid settings (columns, large
+    first image, gap); mobile is a CSS scroll-snap filmstrip.
+  {%- endcomment -%}
+  {%- liquid
+    assign placeholder_ratio = block_settings.aspect_ratio
+    if placeholder_ratio == 'adapt'
+      assign placeholder_ratio = '3/4'
+    endif
+
+    assign placeholder_layout = 'carousel'
+    if media_presentation == 'grid'
+      assign placeholder_layout = 'grid-' | append: block_settings.media_columns
+      if block_settings.media_columns == 'two' and block_settings.large_first_image
+        assign placeholder_layout = placeholder_layout | append: ' media-gallery-placeholder--large-first'
+      endif
+    endif
+
+    assign placeholder_labels = 'content.product_media_placeholder_front,content.product_media_placeholder_detail,content.product_media_placeholder_worn'
+    assign placeholder_tones = 'sand,cream,taupe'
+
+    # A plain two-column grid gets a fourth tile so it fills 2 x 2
+    if placeholder_layout == 'grid-two'
+      assign placeholder_labels = placeholder_labels | append: ',content.product_media_placeholder_back'
+      assign placeholder_tones = placeholder_tones | append: ',sand'
+    endif
+
+    assign placeholder_labels = placeholder_labels | split: ','
+    assign placeholder_tones = placeholder_tones | split: ','
+  -%}
   <div
-    class="
-      {% if block_settings.extend_media %}
-        media-gallery--extend
-      {% endif %}
-    "
+    class="media-gallery-placeholder media-gallery-placeholder--{{ placeholder_layout }} spacing-style sticky-content{% if block_settings.extend_media %} media-gallery--extend{% endif %}"
+    style="{% render 'spacing-style', settings: block_settings %} --image-gap: {{ block_settings.image_gap }}px; --image-gap-mobile: {{ block_settings.image_gap_mobile }}px; --media-radius: {{ block_settings.media_radius }}px; --placeholder-ratio: {{ placeholder_ratio }};"
     {{ block_shopify_attributes }}
   >
-    {{ 'product-apparel-1' | placeholder_svg_tag: 'product-media-gallery__placeholder-image' }}
+    <ul class="media-gallery-placeholder__list list-unstyled">
+      {%- for label_key in placeholder_labels -%}
+        <li class="media-gallery-placeholder__item">
+          {% render 'brand-placeholder',
+            class: 'media-gallery-placeholder__image',
+            tone: placeholder_tones[forloop.index0],
+            width: 600,
+            height: 800
+          %}
+          <span class="media-gallery-placeholder__label">{{ label_key | t }}</span>
+        </li>
+      {%- endfor -%}
+    </ul>
   </div>
 {% else %}
   <media-gallery
@@ -361,7 +401,7 @@
         media-gallery--extend
       {% endif %}
     "
-    style="{% render 'spacing-style', settings: block_settings %} --thumbnail-width: {{ block_settings.thumbnail_width }}px; --media-radius: {{ block_settings.media_radius }}px;{% if block_settings.icons_style contains 'large' %} --slideshow-icon-padding: 0px;{% endif %}--image-gap: {{ block_settings.image_gap }}px;{% unless block_settings.aspect_ratio == 'adapt' %} --gallery-aspect-ratio: {{ block_settings.aspect_ratio }};{% endunless %}"
+    style="{% render 'spacing-style', settings: block_settings %} --thumbnail-width: {{ block_settings.thumbnail_width }}px; --media-radius: {{ block_settings.media_radius }}px;{% if block_settings.icons_style contains 'large' %} --slideshow-icon-padding: 0px;{% endif %}--image-gap: {{ block_settings.image_gap }}px; --image-gap-mobile: {{ block_settings.image_gap_mobile }}px;{% unless block_settings.aspect_ratio == 'adapt' %} --gallery-aspect-ratio: {{ block_settings.aspect_ratio }};{% endunless %}"
     data-presentation="{{ media_presentation }}"
     {{ block_shopify_attributes }}
   >
@@ -445,6 +485,10 @@
       {% endcapture %}
     {% endif %}
 
+    {%- comment -%}
+      Little Row: slide gutters line the mobile carousel up with the page margin. The gutter width
+      is only set below 750px (see stylesheet), so desktop carousels are unaffected.
+    {%- endcomment -%}
     {% render 'slideshow',
       ref: 'slideshow',
       class: slideshow_class,
@@ -453,7 +497,8 @@
       slideshow_arrows: slideshow_arrows,
       arrows_position: icons_position,
       animate_arrows: animate_arrows,
-      controls: controls
+      controls: controls,
+      slideshow_gutters: 'start end'
     %}
 
     {% if media_presentation == 'grid' %}
@@ -1066,5 +1111,123 @@
 
   slideshow-slide.product-media-container--tallest {
     content-visibility: visible;
+  }
+
+  /* ================================
+   * Little Row product gallery
+   * ================================ */
+
+  /* Mobile "hint" carousel: each image is 86% wide so the next one peeks in and cues the swipe.
+     Slides sit inside the page margin, matching the product details below. The gap between slides
+     is the block's "Mobile gap" setting. */
+  @media screen and (max-width: 749px) {
+    .media-gallery--hint {
+      --slideshow-gap: var(--image-gap-mobile, var(--page-margin));
+      --gutter-slide-width: var(--page-margin);
+
+      :not(.dialog-zoomed-gallery) > .product-media-container:not(:only-child) {
+        width: 86%;
+      }
+    }
+  }
+
+  /* Placeholder gallery (no product media) */
+  .media-gallery-placeholder {
+    display: block;
+    width: 100%;
+  }
+
+  .media-gallery-placeholder__list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--image-gap, var(--gap-xs));
+  }
+
+  .media-gallery-placeholder__item {
+    position: relative;
+    aspect-ratio: var(--placeholder-ratio, 3 / 4);
+    overflow: hidden;
+    border-radius: var(--media-radius, 0);
+  }
+
+  .media-gallery-placeholder__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .media-gallery-placeholder__label {
+    position: absolute;
+    inset-inline-start: 10px;
+    inset-block-end: 8px;
+    font-size: var(--font-size--sm);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+  }
+
+  @media screen and (min-width: 750px) {
+    .media-gallery-placeholder--grid-two .media-gallery-placeholder__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .media-gallery-placeholder--large-first .media-gallery-placeholder__item:first-child {
+      grid-column: span 2;
+    }
+  }
+
+  /* Mobile, and the carousel presentation: a snapping filmstrip with the next image peeking in */
+  @media screen and (max-width: 749px) {
+    .media-gallery-placeholder__list {
+      display: flex;
+      gap: var(--image-gap-mobile, var(--page-margin));
+      padding-inline: var(--page-margin);
+      scroll-padding-inline: var(--page-margin);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    .media-gallery-placeholder__item {
+      flex: 0 0 86%;
+      scroll-snap-align: start;
+    }
+  }
+
+  /* Quick add modal: fill the gallery column's full height, like Horizon's media-gallery there.
+     The tiles drop their ratio; the placeholder art crops like object-fit: cover. */
+  @media screen and (min-width: 750px) {
+    .quick-add-modal__content .media-gallery-placeholder {
+      position: absolute;
+      inset: 0;
+    }
+
+    .quick-add-modal__content .media-gallery-placeholder__list {
+      height: 100%;
+      grid-auto-rows: minmax(0, 1fr);
+    }
+
+    .quick-add-modal__content .media-gallery-placeholder__item {
+      aspect-ratio: auto;
+    }
+  }
+
+  @media screen and (min-width: 750px) {
+    .media-gallery-placeholder--carousel .media-gallery-placeholder__list {
+      display: flex;
+      gap: var(--gap-xs);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+
+    .media-gallery-placeholder--carousel .media-gallery-placeholder__item {
+      flex: 0 0 100%;
+      scroll-snap-align: start;
+    }
   }
 {% endstylesheet %}

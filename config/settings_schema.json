@@ -1456,6 +1456,17 @@
         "step": 1,
         "unit": "px",
         "default": 40
+      },
+      {
+        "type": "header",
+        "content": "t:content.sold_out_button"
+      },
+      {
+        "type": "checkbox",
+        "id": "notify_me_when_sold_out",
+        "label": "t:settings.notify_me_when_sold_out",
+        "info": "t:info.notify_me_when_sold_out",
+        "default": false
       }
     ]
   },
@@ -1549,6 +1560,12 @@
         "default": true
       },
       {
+        "type": "product",
+        "id": "gift_box_product",
+        "label": "t:settings.gift_box_product",
+        "info": "t:info.gift_box_product"
+      },
+      {
         "type": "checkbox",
         "id": "show_installments",
         "label": "t:settings.installments",
@@ -1570,6 +1587,47 @@
       {
         "type": "header",
         "content": "t:content.product_media"
+      },
+      {
+        "type": "range",
+        "id": "cart_thumbnail_width",
+        "label": "t:settings.cart_thumbnail_width",
+        "min": 60,
+        "max": 160,
+        "step": 4,
+        "unit": "px",
+        "default": 120
+      },
+      {
+        "type": "range",
+        "id": "cart_product_title_size",
+        "label": "t:settings.cart_product_title_size",
+        "min": 12,
+        "max": 20,
+        "step": 1,
+        "unit": "px",
+        "default": 14
+      },
+      {
+        "type": "select",
+        "id": "cart_drawer_image_ratio",
+        "label": "t:settings.cart_drawer_image_ratio",
+        "info": "t:info.cart_drawer_image_ratio",
+        "options": [
+          {
+            "value": "adapt",
+            "label": "t:options.auto"
+          },
+          {
+            "value": "portrait",
+            "label": "t:options.portrait"
+          },
+          {
+            "value": "square",
+            "label": "t:options.square"
+          }
+        ],
+        "default": "portrait"
       },
       {
         "type": "select",
@@ -1642,6 +1700,13 @@
         "label": "t:settings.border_color",
         "default": "{{ settings.color_palette.foreground }}",
         "alpha": true
+      },
+      {
+        "type": "checkbox",
+        "id": "drawer_overlay_desktop",
+        "label": "t:settings.drawer_overlay_desktop",
+        "info": "t:info.drawer_overlay_desktop",
+        "default": false
       }
     ]
   },
@@ -1902,6 +1967,13 @@
         "info": "t:settings.empty_state_collection_info"
       },
       {
+        "type": "text",
+        "id": "search_suggestions",
+        "label": "t:settings.search_suggestions",
+        "info": "t:info.search_suggestions",
+        "default": "knitted, borg, cotton, pyjamas"
+      },
+      {
         "type": "header",
         "content": "t:names.predictive_search"
       },
@@ -1946,6 +2018,13 @@
   {
     "name": "t:names.swatches",
     "settings": [
+      {
+        "type": "textarea",
+        "id": "colour_swatch_map",
+        "label": "t:settings.colour_swatch_map",
+        "info": "t:info.colour_swatch_map",
+        "default": "cream: #F2EFE6\nwhite: #FFFFFF\ntaupe: #A69F92\nbrown: #7A5C43\nkhaki: #7C7A5E\nsage: #9AA68F\nink: #1A1A1A\nsand: #DCCAB5"
+      },
       {
         "type": "checkbox",
         "id": "show_variant_image",

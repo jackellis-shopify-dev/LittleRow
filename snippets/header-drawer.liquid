@@ -96,6 +96,8 @@
         style="
           {%- render 'menu-font-styles', settings: block_settings, menu_type: 'drawer' %}
           {%- render 'submenu-font-styles', settings: block_settings %}
+          {%- assign drawer_font = block_settings.drawer_font | default: block_settings.type_font_primary_link -%}
+          --menu-top-level-font-family: var(--font-{{ drawer_font }}--family); --menu-top-level-font-style: var(--font-{{ drawer_font }}--style); --menu-top-level-font-weight: var(--font-{{ drawer_font }}--weight);
         "
         aria-label="{{ 'accessibility.header_navigation_label' | t }}"
       >
@@ -135,8 +137,8 @@
                         class="menu-drawer__menu-item menu-drawer__menu-item--mainlist menu-drawer__animated-element"
                       >
                         <span class="menu-drawer__menu-item-text wrap-text">{{ link.title | escape }}</span>
-                        <span class="svg-wrapper icon-plus">
-                          {{- 'icon-plus.svg' | inline_asset_content -}}
+                        <span class="svg-wrapper icon-caret icon-animated">
+                          {{- 'icon-caret.svg' | inline_asset_content -}}
                         </span>
                       </summary>
                       {% liquid
@@ -175,7 +177,10 @@
                                   sizes: 'auto, 400px'
                                 %}
                               {% endif %}
-                              <span class="menu-drawer__menu-item-text wrap-text">{{ childlink.title | escape }}</span>
+                              <span class="menu-drawer__menu-item-text wrap-text">
+                                {{- childlink.title | escape -}}
+                                {%- render 'menu-link-suffix', link: childlink, class: 'menu-drawer__menu-item-suffix' -%}
+                              </span>
                             </a>
                           </li>
                         {%- endfor -%}
@@ -720,14 +725,20 @@
             </drawer-localization-component>
           {% endif %}
         {%- endif -%}
+        {%- render 'header-drawer-account-link' -%}
       </div>
 
       {% liquid
-        if block_settings.menu_style == 'featured_collections'
+        assign drawer_featured_style = block_settings.menu_style
+        unless block_settings.drawer_featured_content
+          assign drawer_featured_style = 'text'
+        endunless
+
+        if drawer_featured_style == 'featured_collections'
           assign top_level_featured_collections = linklist.links | where: 'type', 'collection_link'
         endif
 
-        if eager_loading and block_settings.menu_style == 'featured_products'
+        if eager_loading and drawer_featured_style == 'featured_products'
           for link in linklist.links
             if link.type == 'collection_link'
               assign collection_linklist = link
@@ -855,22 +866,9 @@
     }
   }
 
-  details:not(.menu-open) .header__icon--menu .header-drawer-icon--close {
+  /* The header button stays a burger glyph; the drawer carries its own close button. */
+  .header__icon--menu .header-drawer-icon--close {
     display: none;
-  }
-
-  details.menu-open .header__icon--menu .header-drawer-icon--close {
-    @media screen and (min-width: 750px) {
-      display: none;
-    }
-  }
-
-  details.menu-open .header__icon--menu .header-drawer-icon--open {
-    display: none;
-
-    @media screen and (min-width: 750px) {
-      display: flex;
-    }
   }
 
   .menu-drawer {
@@ -1488,5 +1486,108 @@
 
   .drawer-localization .language-selector .svg-wrapper.icon-caret svg {
     transform: none;
+  }
+
+  /* ================================
+   * Little Row drawer
+   * ================================ */
+  .menu-drawer {
+    --drawer-padding: var(--padding-xl);
+
+    width: min(88vw, 400px);
+    max-width: none;
+    padding-block-start: max(var(--padding-sm), var(--safe-area-inset-top));
+    padding-block-end: max(var(--padding-2xl), var(--safe-area-inset-bottom));
+    border-right: 0;
+    box-shadow: var(--shadow-popover);
+
+    @media screen and (min-width: 750px) {
+      width: min(88vw, 400px);
+    }
+  }
+
+  .menu-drawer,
+  details[open] > .menu-drawer__submenu {
+    transition: transform var(--drawer-animation-speed) var(--animation-timing-fade-in),
+      visibility var(--drawer-animation-speed) var(--animation-timing-fade-in),
+      opacity var(--drawer-animation-speed) var(--animation-timing-fade-in);
+  }
+
+  .menu-drawer__backdrop {
+    backdrop-filter: none;
+    background: rgb(var(--backdrop-color-rgb) / var(--backdrop-opacity));
+    transition: opacity var(--drawer-animation-speed) var(--animation-timing-fade-out);
+  }
+
+  /* Close button sits top-left inside the panel, aligned with the menu text */
+  .menu-drawer > .menu-drawer__close-button {
+    align-self: flex-start;
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    padding: 0;
+    margin-inline-start: calc(var(--drawer-padding) - 10px);
+    margin-block-end: var(--margin-xs);
+  }
+
+  /* Items arrive with the panel rather than staggering in after it */
+  .menu-drawer-container[open] .menu-drawer__animated-element {
+    animation: none;
+  }
+
+  /* Top-level font comes from the menu block's "Drawer font" setting; child links follow "Submenu size" */
+  .menu-drawer__menu {
+    --menu-top-level-font-size: var(--font-size--xl);
+    --menu-top-level-font-line-height: var(--line-height--heading-normal);
+  }
+
+  .menu-drawer__menu > .menu-drawer__list-item {
+    min-height: 0;
+  }
+
+  .menu-drawer__menu .menu-drawer__list-item--deep,
+  .menu-drawer__menu .menu-drawer__list-item--flat {
+    margin-block-end: 0;
+  }
+
+  .menu-drawer__menu-item--mainlist {
+    min-height: 0;
+    padding-block: 14px;
+    gap: var(--gap-sm);
+  }
+
+  .menu-drawer__menu-item--mainlist > .svg-wrapper {
+    padding: 0;
+  }
+
+  /* Accordion sections push the list down; caret rotates 180° when open */
+  .menu-drawer__menu accordion-custom details::details-content,
+  .menu-drawer__menu accordion-custom .details-content {
+    transition-duration: 240ms;
+  }
+
+  .menu-drawer__menu summary .icon-caret > svg {
+    transition: transform 200ms var(--ease-out-cubic);
+  }
+
+  .menu-drawer__list-item--deep .menu-drawer__menu--childlist {
+    margin-block-start: 0;
+    padding-block-end: var(--padding-xs);
+    padding-inline-start: 2px;
+  }
+
+  .menu-drawer__menu-item--child {
+    padding-block: 10px;
+  }
+
+  .menu-drawer__menu-item-suffix {
+    color: var(--text-muted);
+  }
+
+  .menu-drawer__account-link {
+    padding-block-start: 18px;
+    font-size: var(--font-size--sm);
+    color: var(--text-subdued);
+    text-decoration: none;
+    text-transform: lowercase;
   }
 {% endstylesheet %}

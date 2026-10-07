@@ -53,6 +53,7 @@ class PredictiveSearchComponent extends Component {
       document.addEventListener('keydown', this.#handleKeyboardShortcut, { signal });
       dialog.addEventListener(DialogCloseEvent.eventName, this.#handleDialogClose, { signal });
       dialog.addEventListener(DialogOpenEvent.eventName, this.#handleDialogOpen, { signal, once: true });
+      dialog.addEventListener(DialogOpenEvent.eventName, this.#focusInputOnOpen, { signal });
 
       this.addEventListener('click', this.#handleModalClick, { signal });
     }
@@ -93,9 +94,38 @@ class PredictiveSearchComponent extends Component {
    * @param {KeyboardEvent} event - The keyboard event.
    */
   #handleKeyboardShortcut = (event) => {
-    if (event.metaKey && event.key === 'k') {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
       this.dialog?.toggleDialog();
     }
+  };
+
+  /**
+   * Focus the search input once the dialog has painted.
+   */
+  #focusInputOnOpen = () => {
+    requestAnimationFrame(() => this.refs.searchInput.focus());
+  };
+
+  /**
+   * Run a suggested search term straight away, without waiting for the typing debounce.
+   * The link's href is a regular search URL, so suggestions still work without JavaScript.
+   * @param {MouseEvent} event
+   */
+  applySuggestion = (event) => {
+    const link = event.target;
+    if (!(link instanceof HTMLElement) || !link.dataset.term) return;
+
+    event.preventDefault();
+
+    const { searchInput } = this.refs;
+    searchInput.value = link.dataset.term;
+    searchInput.focus();
+
+    this.#debouncedSearch.cancel();
+    this.#currentIndex = -1;
+    this.#showResetButton();
+    this.#getSearchResults(link.dataset.term);
   };
 
   /**
@@ -182,12 +212,37 @@ class PredictiveSearchComponent extends Component {
    * @param {KeyboardEvent} event - The keyboard event.
    */
   onSearchKeyDown = (event) => {
+    const hasTerm = this.refs.searchInput.value.trim().length > 0;
+
     if (event.key === 'Escape') {
-      this.#resetSearch();
+      // A non-empty term is cleared first; with nothing typed, Escape reaches the dialog and closes it.
+      if (this.refs.searchInput.value.length > 0) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.#debouncedSearch.cancel();
+        this.refs.searchInput.focus();
+        this.#resetSearch();
+      }
       return;
     }
 
-    if (!this.#allResultsItems?.length || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    // Enter and result cycling belong to the search field; suggestion links and the close
+    // button keep their native keyboard behaviour.
+    if (document.activeElement !== this.refs.searchInput) return;
+
+    if (event.key === 'Enter' && this.#currentIndex < 0) {
+      event.preventDefault();
+      if (!hasTerm) return;
+
+      const searchUrl = new URL(Theme.routes.search_url, location.origin);
+      searchUrl.searchParams.set('q', this.refs.searchInput.value.trim());
+      searchUrl.searchParams.set('type', 'product');
+      window.location.href = searchUrl.toString();
+      return;
+    }
+
+    // Result cycling applies to live results only, not the recently viewed empty state.
+    if (!hasTerm || !this.#allResultsItems?.length || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
       return;
     }
 
@@ -220,21 +275,9 @@ class PredictiveSearchComponent extends Component {
         break;
 
       case 'Enter': {
-        const singleResultContainer = this.refs.predictiveSearchResults.querySelector('[data-single-result-url]');
-        if (singleResultContainer instanceof HTMLElement && singleResultContainer.dataset.singleResultUrl) {
-          event.preventDefault();
-          window.location.href = singleResultContainer.dataset.singleResultUrl;
-          return;
-        }
-
-        if (this.#currentIndex >= 0) {
-          event.preventDefault();
-          this.#currentItem?.querySelector('a')?.click();
-        } else {
-          const searchUrl = new URL(Theme.routes.search_url, location.origin);
-          searchUrl.searchParams.set('q', this.refs.searchInput.value);
-          window.location.href = searchUrl.toString();
-        }
+        // Nothing highlighted was handled above as a full search; open the highlighted result.
+        event.preventDefault();
+        this.#currentItem?.querySelector('a')?.click();
         break;
       }
     }
@@ -281,19 +324,27 @@ class PredictiveSearchComponent extends Component {
    * Debounce the search handler to fetch and display search results based on the input value.
    * Reset the current selection index and close results if the search term is empty.
    */
-  search = debounce((event) => {
+  search = (event) => {
     // If the input is not a text input (like using the Escape key), don't search
     if (!event.inputType) return;
 
-    const searchTerm = this.refs.searchInput.value.trim();
     this.#currentIndex = -1;
 
-    if (!searchTerm.length) {
+    // Emptying the field returns to the empty state immediately rather than after the debounce.
+    if (!this.refs.searchInput.value.trim().length) {
+      this.#debouncedSearch.cancel();
       this.#resetSearch();
       return;
     }
 
     this.#showResetButton();
+    this.#debouncedSearch();
+  };
+
+  #debouncedSearch = debounce(() => {
+    const searchTerm = this.refs.searchInput.value.trim();
+    if (!searchTerm.length) return;
+
     this.#getSearchResults(searchTerm);
   }, 200);
 
@@ -316,7 +367,9 @@ class PredictiveSearchComponent extends Component {
 
     const url = new URL(Theme.routes.predictive_search_url, location.origin);
     url.searchParams.set('q', searchTerm);
-    url.searchParams.set('resources[limit_scope]', 'each');
+    url.searchParams.set('resources[type]', 'product');
+    url.searchParams.set('resources[limit]', '6');
+    url.searchParams.set('resources[options][unavailable_products]', 'hide');
 
     const { predictiveSearchResults } = this.refs;
 
@@ -352,6 +405,7 @@ class PredictiveSearchComponent extends Component {
 
         // Count all result items (products, collections, pages, articles, queries)
         const resultCount = predictiveSearchResults.querySelectorAll('[ref="resultsItems[]"]').length;
+        this.refs.searchInput.setAttribute('aria-expanded', String(resultCount > 0));
         deferredPromise.resolve({ totalCount: resultCount });
       })
       .catch((error) => {
@@ -405,6 +459,7 @@ class PredictiveSearchComponent extends Component {
 
     this.#currentIndex = -1;
     searchInput.value = '';
+    searchInput.setAttribute('aria-expanded', 'false');
     this.#hideResetButton();
 
     const abortController = this.#createAbortController();

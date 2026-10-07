@@ -33,6 +33,10 @@
     # Get the initial quantity based on quantity rules
     assign initial_quantity = current_variant.quantity_rule.min | default: 1
   %}
+  {%- comment -%} Little Row: sold out reads "notify me", like the main button (see util-notify-me) {%- endcomment -%}
+  {%- capture sticky_notify_me -%}
+    {%- render 'util-notify-me', product_resource: product, variant: current_variant -%}
+  {%- endcapture -%}
 
   <sticky-add-to-cart
     class="sticky-add-to-cart"
@@ -124,9 +128,11 @@
         class="sticky-add-to-cart__button add-to-cart-button button"
         ref="addToCartButton"
         on:click="/handleAddToCartClick"
-        {% unless current_variant.available %}
+        {% if sticky_notify_me == 'true' %}
+          data-notify-me
+        {% elsif current_variant.available != true %}
           disabled
-        {% endunless %}
+        {% endif %}
       >
         <span
           class="add-to-cart-text"
@@ -135,6 +141,10 @@
             <span class="svg-wrapper">
               {{- 'icon-add-to-cart.svg' | inline_asset_content -}}
             </span>
+          {% elsif sticky_notify_me == 'true' %}
+            <span class="svg-wrapper">
+              {{- 'icon-notify.svg' | inline_asset_content -}}
+            </span>
           {% endif %}
           <span class="add-to-cart-text__content">
             <span>
@@ -142,6 +152,8 @@
                 {{- 'products.product.add_to_cart' | t -}}
               {%- elsif current_variant == blank -%}
                 {{- 'products.product.unavailable' | t -}}
+              {%- elsif sticky_notify_me == 'true' -%}
+                {{- 'content.notify_me' | t -}}
               {%- else -%}
                 {{- 'products.product.sold_out' | t -}}
               {%- endif -%}

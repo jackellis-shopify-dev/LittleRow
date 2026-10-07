@@ -6,6 +6,7 @@
   class="
     payment-icons
     spacing-style
+    {% if block_settings.icon_colour == 'tonal' %}payment-icons--tonal{% endif %}
   "
   style="
     {% render 'spacing-padding', settings: block_settings %}
@@ -46,6 +47,15 @@
     display: flex;
     align-items: center;
   }
+
+  /* Little Row "Icon colour: tonal": the brand colours become warm neutrals from the palette.
+     Grayscale plus a little sepia lands on the taupe range, and multiply lets each card's white
+     face take on the background colour. */
+  .payment-icons--tonal .payment-icons__item svg {
+    filter: grayscale(1) sepia(0.3) contrast(0.9);
+    mix-blend-mode: multiply;
+    opacity: var(--opacity-80);
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -76,6 +86,22 @@
         }
       ],
       "default": "flex-start"
+    },
+    {
+      "type": "select",
+      "id": "icon_colour",
+      "label": "t:settings.payment_icon_colour",
+      "options": [
+        {
+          "value": "full",
+          "label": "t:options.payment_icon_full"
+        },
+        {
+          "value": "tonal",
+          "label": "t:options.payment_icon_tonal"
+        }
+      ],
+      "default": "full"
     },
     {
       "type": "range",

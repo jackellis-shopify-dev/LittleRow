@@ -1,0 +1,27 @@
+{%- doc -%}
+  Echoes the hex for a colour name from the "Colour swatches" map in Theme settings → Swatches
+  (lines or commas of `name: #hex`). Matching ignores case and surrounding spaces. Echoes nothing
+  when the name has no entry.
+
+  Used by colourway swatches and personalisation thread colours.
+
+  @param {string} name - The colour name, e.g. "cream".
+
+  @example
+  {%- capture swatch_hex -%}{% render 'util-colour-hex', name: 'cream' %}{%- endcapture -%}
+{%- enddoc -%}
+
+{%- liquid
+  assign colour_name = name | strip | downcase
+  if colour_name != blank
+    assign entries = settings.colour_swatch_map | newline_to_br | replace: '<br />', ',' | split: ','
+    for entry in entries
+      assign entry_parts = entry | split: ':'
+      assign entry_name = entry_parts.first | strip | downcase
+      if entry_parts.size > 1 and entry_name == colour_name
+        echo entry_parts.last | strip
+        break
+      endif
+    endfor
+  endif
+-%}

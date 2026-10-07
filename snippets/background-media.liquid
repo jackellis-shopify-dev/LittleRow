@@ -6,13 +6,15 @@
   @param {string} [background_video_position] - The background video position
   @param {object} [background_image] - The background image
   @param {string} [background_image_position] - The background image position
-  @param {string} [placeholder] - The placeholder
+  @param {string} [placeholder] - Horizon placeholder name (e.g. 'hero-apparel-2'); its trailing number picks the brand placeholder tint
   @param {object} [block] - The block object
   @param {object} [section] - The section object
 
   @example
   {% render 'background-media', background_media: background_media, background_video: background_video, background_video_position: background_video_position, background_image: background_image, background_image_position: background_image_position, placeholder: placeholder %}
 {%- enddoc -%}
+
+{% assign placeholder_index = placeholder | default: 'hero-apparel-2' | split: '-' | last | plus: 0 %}
 
 {% if background_media == 'video' %}
   {% liquid
@@ -66,11 +68,7 @@
     </video-background-component>
   {%- else -%}
     <div class="{{ video_classes }}">
-      {%- assign placeholder_name = placeholder | default: 'hero-apparel-2' -%}
-      {%- if placeholder_name == blank -%}
-        {%- assign placeholder_name = 'hero-apparel-2' -%}
-      {%- endif -%}
-      {{ placeholder_name | placeholder_svg_tag }}
+      {%- render 'brand-placeholder', index: placeholder_index -%}
     </div>
   {%- endif -%}
 {% elsif background_media == 'image' %}
@@ -124,11 +122,7 @@
         | image_tag: sizes: sizes, widths: widths, loading: loading, fetchpriority: fetch_priority
       }}
     {%- else -%}
-      {%- assign placeholder_name = placeholder | default: 'hero-apparel-2' -%}
-      {%- if placeholder_name == blank -%}
-        {%- assign placeholder_name = 'hero-apparel-2' -%}
-      {%- endif -%}
-      {{ placeholder_name | placeholder_svg_tag }}
+      {%- render 'brand-placeholder', index: placeholder_index -%}
     {%- endif -%}
   </div>
 {% endif %}

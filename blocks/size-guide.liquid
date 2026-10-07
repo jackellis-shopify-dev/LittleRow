@@ -1,0 +1,170 @@
+{%- doc -%}
+  Little Row: the product's size chart, from its `custom.size_guide` metafield (a `size_guide`
+  metaobject: intro, columns, rows, note). Meant to sit inside the "size guide" accordion row.
+
+  Rows are single lines with cells separated by `|`, in column order. The first cell is the row's
+  header (the size). With no size guide on the product, the whole accordion row is hidden on the
+  storefront; in the theme editor a hint shows instead.
+{%- enddoc -%}
+
+{%- liquid
+  assign size_guide = closest.product.metafields.custom.size_guide.value
+  assign columns = size_guide.columns.value
+  assign rows = size_guide.rows.value
+  assign intro = size_guide.intro.value
+  assign note = size_guide.note.value
+-%}
+
+{%- if size_guide != blank and columns.size > 0 and rows.size > 0 -%}
+  <div
+    class="size-guide spacing-style"
+    style="{% render 'spacing-style', settings: block.settings %}"
+    {{ block.shopify_attributes }}
+  >
+    {%- if intro != blank -%}
+      <p class="size-guide__intro">{{ intro | escape | newline_to_br }}</p>
+    {%- endif -%}
+
+    <div class="size-guide__scroll">
+      <table class="size-guide__table">
+        <thead>
+          <tr>
+            {%- for column in columns -%}
+              <th scope="col">{{ column | escape }}</th>
+            {%- endfor -%}
+          </tr>
+        </thead>
+        <tbody>
+          {%- for row in rows -%}
+            {%- assign cells = row | split: '|' -%}
+            <tr>
+              {%- for column in columns -%}
+                {%- assign cell = cells[forloop.index0] | strip -%}
+                {%- if forloop.first -%}
+                  <th scope="row">{{ cell | escape }}</th>
+                {%- else -%}
+                  <td>{{ cell | escape }}</td>
+                {%- endif -%}
+              {%- endfor -%}
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+
+    {%- if note != blank -%}
+      <p class="size-guide__note">{{ note | escape }}</p>
+    {%- endif -%}
+  </div>
+{%- elsif request.design_mode -%}
+  <p
+    class="size-guide__missing"
+    {{ block.shopify_attributes }}
+  >
+    {{ 'content.size_guide_missing' | t }}
+  </p>
+{%- else -%}
+  <span
+    class="size-guide--empty"
+    hidden
+  ></span>
+{%- endif -%}
+
+{% stylesheet %}
+  .size-guide {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-md);
+    width: 100%;
+  }
+
+  .size-guide__intro,
+  .size-guide__note,
+  .size-guide__missing {
+    margin: 0;
+  }
+
+  .size-guide__scroll {
+    overflow-x: auto;
+  }
+
+  .size-guide__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size--sm);
+    font-variant-numeric: tabular-nums;
+
+    th,
+    td {
+      padding-block: var(--padding-xs);
+      padding-inline: 0 var(--padding-md);
+      text-align: start;
+      font-weight: inherit;
+      white-space: nowrap;
+      border-bottom: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10));
+    }
+
+    thead th {
+      font-weight: 500;
+      border-bottom-color: rgb(var(--color-foreground-rgb) / var(--opacity-20));
+    }
+
+    td {
+      color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+    }
+  }
+
+  .size-guide__note,
+  .size-guide__missing {
+    font-size: var(--font-size--sm);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-muted-text));
+  }
+
+  /* No size guide on this product: hide the accordion row it sits in */
+  accordion-custom:has(.size-guide--empty) {
+    display: none;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.size_guide",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.size_guide_info"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.size_guide",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,640 @@
+{%- doc -%}
+  Name-on-label personalisation for the product page.
+
+  The offer is a `personalisation` metaobject referenced by the product metafield
+  `custom.personalisation` (fields: heading, summary, description, max_characters,
+  thread_colours, fonts, fee_variant). Products without the metafield show nothing. Each font
+  name needs a font file in the theme (`util-embroidery-font` maps names to families).
+
+  An optional `embroidery_preview` metaobject (product metafield `custom.embroidery_preview`;
+  fields: background_image, font, size, position_x, position_y, rotation) adds an image above
+  the name field with the typed name drawn on it in the chosen font and thread colour. Its own
+  `font` field is only used when the offer has no fonts to choose from. Thread hexes come from
+  the "Colour swatches" theme setting.
+
+  Choosing a name fills hidden line item properties on the product form. On add to cart,
+  product-form.js also adds the fee variant as a nested cart line under the garment, so the
+  personalisation price is charged at checkout and is removed with the garment.
+{%- enddoc -%}
+
+{%- liquid
+  assign block_settings = block.settings
+  assign product = closest.product
+  assign offer = product.metafields.custom.personalisation.value
+  assign fee_variant = offer.fee_variant.value
+
+  assign show_offer = false
+  if offer != blank and fee_variant != blank and fee_variant.available and fee_variant.product.id != product.id
+    assign show_offer = true
+  endif
+-%}
+
+{%- if show_offer -%}
+  {%- liquid
+    assign max_characters = offer.max_characters.value | default: 12
+    assign thread_colours = offer.thread_colours.value
+    assign fee_price = fee_variant.price | money
+    assign product_form_id = 'BuyButtons-ProductForm-' | append: section.id
+    assign dialog_id = 'PersonalisationDialog-' | append: block.id
+    assign name_property = 'content.personalisation_property_name' | t
+    assign thread_property = 'content.personalisation_property_thread' | t
+    assign fonts = offer.fonts.value
+    assign font_property = 'content.personalisation_property_font' | t
+
+    assign preview = product.metafields.custom.embroidery_preview.value
+    assign preview_image = preview.background_image.value
+    assign preview_font = preview.font.value
+    unless preview_font == 'serif' or preview_font == 'sans'
+      assign preview_font = 'script'
+    endunless
+
+    capture preview_thread_hex
+      if thread_colours.size > 0
+        render 'util-colour-hex', name: thread_colours.first
+      endif
+    endcapture
+    assign preview_thread_hex = preview_thread_hex | strip
+
+    capture preview_font_family
+      if fonts.size > 0
+        render 'util-embroidery-font', name: fonts.first
+      endif
+    endcapture
+    assign preview_font_family = preview_font_family | strip
+
+    capture default_summary
+      echo '+' | append: fee_price
+      if offer.summary.value != blank
+        echo ', ' | append: offer.summary.value
+      endif
+    endcapture
+  -%}
+
+  <script
+    src="{{ 'dialog.js' | asset_url }}"
+    type="module"
+  ></script>
+  <script
+    src="{{ 'personalisation.js' | asset_url }}"
+    type="module"
+  ></script>
+
+  {% render 'dialog-styles' %}
+
+  {% if block_settings.bar_color != blank %}
+    {% render 'contrast-override', background_color: block_settings.bar_color, section_id: block.id %}
+  {% endif %}
+
+  <personalisation-component
+    class="personalisation spacing-style"
+    style="{% render 'spacing-style', settings: block_settings %}"
+    data-default-summary="{{ default_summary | strip | escape }}"
+    data-applied-template="{{ 'content.personalisation_applied' | t: price: fee_price | escape }}"
+    data-applied-template-no-thread="{{ 'content.personalisation_applied_no_thread' | t: price: fee_price | escape }}"
+    data-applied-template-font="{{ 'content.personalisation_applied_font' | t: price: fee_price | escape }}"
+    data-applied-template-font-no-thread="{{ 'content.personalisation_applied_font_no_thread' | t: price: fee_price | escape }}"
+    {{ block.shopify_attributes }}
+  >
+    <input
+      type="hidden"
+      name="properties[{{ name_property | escape }}]"
+      form="{{ product_form_id }}"
+      data-personalisation-field="name"
+      disabled
+    >
+    <input
+      type="hidden"
+      name="properties[{{ thread_property | escape }}]"
+      form="{{ product_form_id }}"
+      data-personalisation-field="thread"
+      disabled
+    >
+    <input
+      type="hidden"
+      name="properties[{{ font_property | escape }}]"
+      form="{{ product_form_id }}"
+      data-personalisation-field="font"
+      disabled
+    >
+    <input
+      type="hidden"
+      name="personalisation_fee_variant"
+      value="{{ fee_variant.id }}"
+      form="{{ product_form_id }}"
+      data-personalisation-field="fee"
+      disabled
+    >
+
+    <button
+      type="button"
+      class="personalisation__bar{% if block_settings.bar_color != blank %} color-custom-{{ block.id }}{% endif %}"
+      aria-haspopup="dialog"
+      on:click="#{{ dialog_id }}/showDialog"
+    >
+      <span class="personalisation__bar-text">
+        <span class="personalisation__heading">{{ offer.heading.value | escape }}</span>
+        <span
+          class="personalisation__summary"
+          data-personalisation-summary
+        >
+          {{- default_summary | strip -}}
+        </span>
+      </span>
+      <span
+        class="svg-wrapper personalisation__chevron"
+        aria-hidden="true"
+      >
+        {{- 'icon-caret.svg' | inline_asset_content -}}
+      </span>
+    </button>
+
+    <dialog-component id="{{ dialog_id }}">
+      <dialog
+        ref="dialog"
+        class="personalisation-dialog dialog-modal"
+        scroll-lock
+        aria-labelledby="{{ dialog_id }}-heading"
+      >
+        <div class="personalisation-dialog__header">
+          <div>
+            <h2
+              id="{{ dialog_id }}-heading"
+              class="personalisation-dialog__heading h4"
+            >
+              {{ offer.heading.value | escape }}
+            </h2>
+          </div>
+          <button
+            type="button"
+            class="button button-unstyled personalisation-dialog__close"
+            aria-label="{{ 'accessibility.close_dialog' | t }}"
+            on:click="dialog-component/closeDialog"
+          >
+            <span class="svg-wrapper">
+              {{- 'icon-close.svg' | inline_asset_content -}}
+            </span>
+          </button>
+        </div>
+
+        {%- if offer.description.value != blank -%}
+          <p class="personalisation-dialog__description">{{ offer.description.value | escape | newline_to_br }}</p>
+        {%- endif -%}
+
+        {%- if preview_image != blank -%}
+          {%- assign preview_placeholder = 'content.personalisation_preview_placeholder' | t -%}
+          <div
+            class="personalisation-preview personalisation-preview--{{ preview_font }}"
+            style="--preview-max-height: {{ block_settings.preview_height }}px; --preview-aspect-ratio: {{ preview_image.aspect_ratio }}; --preview-x: {{ preview.position_x.value | default: 50 }}%; --preview-y: {{ preview.position_y.value | default: 50 }}%; --preview-size: {{ preview.size.value | default: 8 }}; --preview-rotation: {{ preview.rotation.value | default: 0 }}deg;{% if preview_thread_hex != blank %} --preview-thread-colour: {{ preview_thread_hex }};{% endif %}{% if preview_font_family != blank %} --preview-font-family: {{ preview_font_family }};{% endif %}"
+            aria-hidden="true"
+            data-personalisation-preview
+          >
+            {{-
+              preview_image
+              | image_url: width: 880
+              | image_tag:
+                class: 'personalisation-preview__image',
+                widths: '440, 660, 880',
+                sizes: 'min(520px, 100vw)',
+                loading: 'lazy',
+                alt: ''
+            -}}
+            <span
+              class="personalisation-preview__name"
+              data-personalisation-preview-name
+              data-placeholder="{{ preview_placeholder | escape }}"
+              data-empty
+            >
+              {{- preview_placeholder | escape -}}
+            </span>
+          </div>
+        {%- endif -%}
+
+        <div class="personalisation-dialog__field">
+          <label for="{{ dialog_id }}-name">{{ 'content.personalisation_name_label' | t }}</label>
+          <input
+            id="{{ dialog_id }}-name"
+            class="personalisation-dialog__input"
+            type="text"
+            maxlength="{{ max_characters }}"
+            autocomplete="off"
+            placeholder="{{ 'content.personalisation_name_placeholder' | t }}"
+            aria-describedby="{{ dialog_id }}-count"
+            data-personalisation-input
+            on:input="personalisation-component/handleInput"
+          >
+          <span
+            id="{{ dialog_id }}-count"
+            class="personalisation-dialog__count"
+            data-personalisation-count
+            data-template="{{ 'content.personalisation_character_count' | t: used: '[used]', max: max_characters | escape }}"
+          >
+            {{- 'content.personalisation_character_count' | t: used: 0, max: max_characters -}}
+          </span>
+        </div>
+
+        {%- if fonts.size > 0 -%}
+          <fieldset class="personalisation-dialog__choices">
+            <legend>{{ 'content.personalisation_font_label' | t }}</legend>
+            <div class="personalisation-dialog__choice-options">
+              {%- for font in fonts -%}
+                {%- capture font_family -%}{% render 'util-embroidery-font', name: font %}{%- endcapture -%}
+                {%- assign font_family = font_family | strip -%}
+                <label class="personalisation-dialog__choice">
+                  <input
+                    type="radio"
+                    name="{{ dialog_id }}-font"
+                    value="{{ font | escape }}"
+                    data-personalisation-font
+                    data-font-family="{{ font_family }}"
+                    on:change="personalisation-component/selectFont"
+                    {% if forloop.first %}
+                      checked
+                    {% endif %}
+                  >
+                  <span
+                    class="personalisation-dialog__font-name"
+                    {% if font_family != blank %}
+                      style="font-family: {{ font_family }};"
+                    {% endif %}
+                  >
+                    {{- font | escape -}}
+                  </span>
+                </label>
+              {%- endfor -%}
+            </div>
+          </fieldset>
+        {%- endif -%}
+
+        {%- if thread_colours.size > 0 -%}
+          <fieldset class="personalisation-dialog__choices">
+            <legend>{{ 'content.personalisation_thread_label' | t }}</legend>
+            <div class="personalisation-dialog__choice-options">
+              {%- for thread in thread_colours -%}
+                {%- capture thread_hex -%}{% render 'util-colour-hex', name: thread %}{%- endcapture -%}
+                <label class="personalisation-dialog__choice">
+                  <input
+                    type="radio"
+                    name="{{ dialog_id }}-thread"
+                    value="{{ thread | escape }}"
+                    data-personalisation-thread
+                    data-thread-colour="{{ thread_hex | strip }}"
+                    on:change="personalisation-component/selectThread"
+                    {% if forloop.first %}
+                      checked
+                    {% endif %}
+                  >
+                  <span>{{ thread | escape }}</span>
+                </label>
+              {%- endfor -%}
+            </div>
+          </fieldset>
+        {%- endif -%}
+
+        <div class="personalisation-dialog__actions">
+          <span class="personalisation-dialog__price">+{{ fee_price }}</span>
+          <button
+            type="button"
+            class="button personalisation-dialog__apply"
+            data-personalisation-apply
+            disabled
+            on:click="personalisation-component/apply"
+          >
+            {{ 'content.personalisation_apply' | t }}
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="button-unstyled personalisation-dialog__remove"
+          data-personalisation-remove
+          hidden
+          on:click="personalisation-component/remove"
+        >
+          {{ 'content.personalisation_remove' | t }}
+        </button>
+      </dialog>
+    </dialog-component>
+  </personalisation-component>
+{%- endif -%}
+
+{% stylesheet %}
+  personalisation-component {
+    display: block;
+    width: 100%;
+  }
+
+  .personalisation__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-lg);
+    width: 100%;
+    padding: var(--padding-lg) var(--padding-lg);
+    text-align: start;
+    color: var(--color-foreground);
+    background-color: var(--color-background);
+    border: 0;
+    border-radius: var(--style-border-radius-inputs);
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: var(--focus-outline-width) solid var(--color-foreground);
+      outline-offset: var(--focus-outline-offset);
+    }
+  }
+
+  .personalisation__bar-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-3xs);
+    min-width: 0;
+  }
+
+  .personalisation__heading {
+    font-size: var(--font-size--sm);
+  }
+
+  .personalisation__summary {
+    font-size: var(--font-size--xs);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+  }
+
+  .personalisation__chevron {
+    flex-shrink: 0;
+    width: var(--icon-size-sm);
+    height: var(--icon-size-sm);
+
+    svg {
+      transform: rotate(-90deg);
+    }
+  }
+
+  /* Centred card on every screen size (Horizon's dialog-modal is full screen on mobile) */
+  personalisation-component dialog.personalisation-dialog {
+    --personalisation-dialog-gap-top: max(var(--page-margin, 16px), var(--safe-area-inset-top, 0px));
+    --personalisation-dialog-gap-bottom: max(var(--page-margin, 16px), var(--safe-area-inset-bottom, 0px));
+
+    /* Horizon's .dialog-modal is full screen below 750px; this modal is always a centred card
+       sized to its content, so width, height and margins are restated at every breakpoint. */
+    /* stylelint-disable declaration-no-important */
+    /* !important beats Horizon's full-screen `.dialog-modal` rule below 750px (width: 100dvw;
+       height: 100dvh), which otherwise wins depending on stylesheet bundle order. */
+    width: min(520px, calc(100vw - 2 * var(--page-margin, 16px))) !important;
+    max-width: none !important;
+    height: fit-content !important;
+    max-height: calc(
+      100dvh - var(--personalisation-dialog-gap-top) - var(--personalisation-dialog-gap-bottom)
+    ) !important;
+    /* Centred in the viewport; max-height above keeps the gaps as the minimum breathing room */
+    margin: auto !important;
+    /* stylelint-enable declaration-no-important */
+    padding: var(--padding-3xl);
+    border: 0;
+    border-radius: var(--style-border-radius-popover);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  @media screen and (max-width: 749px) {
+    personalisation-component dialog.personalisation-dialog {
+      padding: var(--padding-2xl);
+    }
+  }
+
+  personalisation-component dialog.personalisation-dialog[open] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-lg);
+    overflow-y: auto;
+  }
+
+  /* .button-unstyled sets display: block, which beats the browser's [hidden]; Horizon only
+     patches .button[hidden]. Without this the remove button takes up space before it applies. */
+  .personalisation-dialog__remove[hidden] {
+    display: none;
+  }
+
+  .personalisation-dialog__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--gap-lg);
+  }
+
+  .personalisation-dialog__heading {
+    margin: 0;
+  }
+
+  .personalisation-dialog__close {
+    display: grid;
+    place-items: center;
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    margin: calc(var(--padding-sm) * -1);
+    color: var(--color-foreground);
+
+    .svg-wrapper,
+    svg {
+      width: var(--icon-size-xs);
+      height: var(--icon-size-xs);
+    }
+  }
+
+  .personalisation-dialog__description {
+    margin: 0;
+    font-size: var(--font-size--sm);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+  }
+
+  /* Embroidery preview: the box keeps the image's ratio so the % position and cqi size of the
+     name line up with the image at any width. Its height is capped by the "Embroidery preview
+     height" setting and 40% of the viewport, so the dialog still fits on short screens. */
+  .personalisation-preview {
+    position: relative;
+    flex-shrink: 0;
+    container-type: inline-size;
+    width: min(100%, calc(min(var(--preview-max-height), 40dvh) * var(--preview-aspect-ratio)));
+    aspect-ratio: var(--preview-aspect-ratio);
+    margin-inline: auto;
+    overflow: hidden;
+    border-radius: var(--style-border-radius-inputs);
+    background-color: var(--surface-sunken);
+  }
+
+  .personalisation-preview__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .personalisation-preview__name {
+    position: absolute;
+    top: var(--preview-y);
+    left: var(--preview-x);
+    font-size: calc(var(--preview-size) * 1cqi);
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--preview-thread-colour, var(--color-foreground));
+    /* A slight drop shadow gives the thread some relief (and keeps pale threads visible) */
+    text-shadow: 0 0.03em 0.02em rgb(var(--color-shadow-rgb) / var(--opacity-30));
+    transform: translate(-50%, -50%) rotate(var(--preview-rotation));
+    transition: color var(--animation-speed-fast) var(--animation-timing-default),
+      opacity var(--animation-speed-fast) var(--animation-timing-default);
+
+    &[data-empty] {
+      opacity: var(--opacity-40);
+    }
+  }
+
+  /* --preview-font-family is the chosen embroidery font; the preview's own font is the fallback
+     for offers with no font choices. */
+  .personalisation-preview--script .personalisation-preview__name {
+    font-family: var(--preview-font-family, var(--font-script--family));
+    font-weight: 600;
+  }
+
+  .personalisation-preview--serif .personalisation-preview__name {
+    font-family: var(--preview-font-family, var(--font-heading--family));
+  }
+
+  .personalisation-preview--sans .personalisation-preview__name {
+    font-family: var(--preview-font-family, var(--font-body--family));
+  }
+
+  .personalisation-dialog__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-xs);
+  }
+
+  .personalisation-dialog__input {
+    width: 100%;
+    padding: var(--input-padding);
+    font: inherit;
+    color: var(--color-input-text);
+    background-color: var(--color-input-background);
+    border: var(--style-border-width-inputs) solid var(--color-input-border);
+    border-radius: var(--style-border-radius-inputs);
+
+    &:focus-visible {
+      outline: var(--focus-outline-width) solid var(--color-foreground);
+      outline-offset: var(--focus-outline-offset);
+    }
+  }
+
+  .personalisation-dialog__count {
+    font-size: var(--font-size--2xs);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+  }
+
+  .personalisation-dialog__choices {
+    margin: 0;
+    padding: 0;
+    border: 0;
+
+    legend {
+      margin-block-end: var(--margin-xs);
+      padding: 0;
+    }
+  }
+
+  .personalisation-dialog__choice-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-xl);
+  }
+
+  .personalisation-dialog__choice {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-xs);
+    cursor: pointer;
+
+    input {
+      accent-color: var(--color-foreground);
+      margin: 0;
+    }
+  }
+
+  /* Each font option is set in its own face (bold files only) */
+  .personalisation-dialog__font-name {
+    font-weight: 700;
+  }
+
+  .personalisation-dialog__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-lg);
+  }
+
+  .personalisation-dialog__remove {
+    align-self: flex-start;
+    font-size: var(--font-size--2xs);
+    text-decoration: underline;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+    cursor: pointer;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.personalisation",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.personalisation_info"
+    },
+    {
+      "type": "color",
+      "id": "bar_color",
+      "label": "t:settings.background_color",
+      "default": "{{ settings.color_palette.color2 }}"
+    },
+    {
+      "type": "range",
+      "id": "preview_height",
+      "label": "t:settings.embroidery_preview_height",
+      "info": "t:info.embroidery_preview_height",
+      "min": 160,
+      "max": 480,
+      "step": 10,
+      "unit": "px",
+      "default": 320
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.personalisation",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

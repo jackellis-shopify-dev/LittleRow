@@ -2,7 +2,7 @@ import { Component } from '@theme/component';
 import { debounce, onDocumentLoaded, setHeaderMenuStyle } from '@theme/utilities';
 import { MegaMenuHoverEvent } from '@theme/events';
 
-/** Skim filter: pointer must dwell this long before MegaMenuHoverEvent fires. */
+/** Skim filter: pointer must dwell this long before a hovered submenu opens. */
 const HOVER_COMMIT_DELAY_MS = 150;
 
 /**
@@ -26,8 +26,11 @@ class HeaderMenu extends Component {
    */
   #submenuMutationObserver = null;
 
-  /** @type {ReturnType<typeof setTimeout> | undefined} */
+  /** Pending hover-dwell timer; the submenu opens when it fires. @type {ReturnType<typeof setTimeout> | undefined} */
   #hoverDispatchTimer;
+
+  /** The menu item the pending hover dwell will open. @type {HTMLElement | null} */
+  #pendingHoverItem = null;
 
   connectedCallback() {
     super.connectedCallback();
@@ -252,13 +255,47 @@ class HeaderMenu extends Component {
   }
 
   /**
-   * Activate the selected menu item immediately
-   * @param {PointerEvent | FocusEvent} event
+   * Activate the selected menu item. Pointer hover must dwell before the submenu commits, so
+   * skimming across the row does not open (and push the page down for) every submenu in turn.
+   * Focus and click activate immediately.
+   * @param {PointerEvent | FocusEvent | MouseEvent} event
    */
   activate = (event) => {
-    if (!(event.target instanceof Element) || !this.headerComponent) return;
+    const { target } = event;
+    if (!(target instanceof Element) || !this.headerComponent) return;
 
-    const item = findMenuItem(event.target);
+    const isHover = event.type === 'pointerenter';
+    const pendingItem = findMenuItem(target);
+
+    // Repeated enters on the item already dwelling (e.g. the Safari hit-test reconciliation
+    // below) must not restart the clock.
+    if (isHover && this.#hoverDispatchTimer !== undefined && pendingItem === this.#pendingHoverItem) return;
+
+    clearTimeout(this.#hoverDispatchTimer);
+    this.#hoverDispatchTimer = undefined;
+    this.#pendingHoverItem = null;
+
+    if (!isHover) {
+      this.#commit(target);
+      return;
+    }
+
+    this.#pendingHoverItem = pendingItem;
+    this.#hoverDispatchTimer = setTimeout(() => {
+      this.#hoverDispatchTimer = undefined;
+      this.#pendingHoverItem = null;
+      this.#commit(target);
+    }, HOVER_COMMIT_DELAY_MS);
+  };
+
+  /**
+   * Open the submenu for the menu item containing `target`.
+   * @param {Element} target
+   */
+  #commit(target) {
+    if (!this.headerComponent) return;
+
+    const item = findMenuItem(target);
 
     if (!item || item == this.#state.activeItem) return;
 
@@ -305,19 +342,7 @@ class HeaderMenu extends Component {
     }
 
     if (submenu) {
-      clearTimeout(this.#hoverDispatchTimer);
-      this.#hoverDispatchTimer = undefined;
-      const committedItem = item;
-      if (event instanceof FocusEvent) {
-        this.dispatchEvent(new MegaMenuHoverEvent());
-      } else {
-        this.#hoverDispatchTimer = setTimeout(() => {
-          this.#hoverDispatchTimer = undefined;
-          if (this.#state.activeItem === committedItem) {
-            this.dispatchEvent(new MegaMenuHoverEvent());
-          }
-        }, HOVER_COMMIT_DELAY_MS);
-      }
+      this.dispatchEvent(new MegaMenuHoverEvent());
 
       // Mark submenu as active for content-visibility optimization
       submenu.dataset.active = '';
@@ -376,7 +401,7 @@ class HeaderMenu extends Component {
     this.#setFullOpenHeaderHeight(finalHeight, headerVisibleHeight);
     this.style.setProperty('--submenu-opacity', '1');
     this.#startPointerTracking(item, previouslyActiveItem);
-  };
+  }
 
   /**
    * Deactivate the active item after a delay
@@ -384,6 +409,19 @@ class HeaderMenu extends Component {
    */
   deactivate(event) {
     if (!(event.target instanceof Element)) return;
+
+    if (event.type === 'pointerleave') {
+      clearTimeout(this.#hoverDispatchTimer);
+      this.#hoverDispatchTimer = undefined;
+
+      // Moving across the row keeps the open submenu in place until the next item's hover
+      // dwell commits, so the dropdown doesn't close and reopen between neighbouring items.
+      const nextListItem =
+        event.relatedTarget instanceof Element ? event.relatedTarget.closest('.menu-list__list-item') : null;
+      if (this.#state.activeItem && nextListItem && nextListItem !== event.target && this.contains(nextListItem)) {
+        return;
+      }
+    }
 
     const menu = findSubmenu(this.#state.activeItem);
     // Keep the submenu open while focus moves between the link, its disclosure

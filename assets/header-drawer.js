@@ -1,6 +1,6 @@
 import { Component } from '@theme/component';
 import { trapFocus, removeTrapFocus } from '@theme/focus';
-import { onAnimationEnd, removeWillChangeOnAnimationEnd } from '@theme/utilities';
+import { mediaQueryLarge, onAnimationEnd, removeWillChangeOnAnimationEnd } from '@theme/utilities';
 
 /**
  * A custom element that manages the main menu drawer.
@@ -18,22 +18,46 @@ class HeaderDrawer extends Component {
     super.connectedCallback();
 
     this.addEventListener('keyup', this.#onKeyUp);
+    mediaQueryLarge.addEventListener('change', this.#onBreakpointChange);
     this.#setupAnimatedElementListeners();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('keyup', this.#onKeyUp);
+    mediaQueryLarge.removeEventListener('change', this.#onBreakpointChange);
   }
 
   /**
-   * Close the main menu drawer when the Escape key is pressed
+   * Escape collapses an open accordion section first; a second Escape closes the drawer.
    * @param {KeyboardEvent} event
    */
   #onKeyUp = (event) => {
     if (event.key !== 'Escape') return;
 
-    this.#close(this.#getDetailsElement(event));
+    const openSection = this.refs.menuDrawer.querySelector('accordion-custom > details[open]');
+    if (openSection instanceof HTMLDetailsElement) {
+      openSection.open = false;
+      openSection.querySelector('summary')?.focus();
+      return;
+    }
+
+    const details = this.#getDetailsElement(event);
+    if (details !== this.refs.details && details.classList.contains('menu-open')) {
+      // Sliding submenu (3-level menus, localization): step back to the main list.
+      this.#close(details);
+      return;
+    }
+
+    if (this.isOpen) this.close();
+  };
+
+  /**
+   * The drawer is a small-screen affordance; widening past the mobile breakpoint dismisses it.
+   * @param {MediaQueryListEvent} event
+   */
+  #onBreakpointChange = (event) => {
+    if (event.matches && this.isOpen) this.close();
   };
 
   /**
@@ -82,7 +106,15 @@ class HeaderDrawer extends Component {
         this.refs.menuDrawer.classList.add('menu-drawer--has-submenu-opened');
       }
 
-      // Wait for the drawer animation to complete before trapping focus
+      if (details === this.refs.details) {
+        // The main drawer traps focus as soon as it starts sliding in, with focus on its
+        // first control (the close button), so keyboard users land inside the panel.
+        trapFocus(this.refs.menuDrawer);
+        this.refs.menuDrawer.querySelector('button, a[href], summary')?.focus({ preventScroll: true });
+        return;
+      }
+
+      // Wait for the submenu animation to complete before trapping focus
       const drawer = details.querySelector('.menu-drawer, .menu-drawer__submenu');
       onAnimationEnd(drawer || details, () => trapFocus(details), { subtree: false });
     });
@@ -116,6 +148,12 @@ class HeaderDrawer extends Component {
     summary.setAttribute('aria-expanded', 'false');
     details.classList.remove('menu-open');
     this.refs.menuDrawer.classList.remove('menu-drawer--has-submenu-opened');
+
+    if (details === this.refs.details) {
+      // Release the trap now rather than after the slide-out, then return focus to the burger.
+      removeTrapFocus();
+      summary.focus({ preventScroll: true });
+    }
 
     // Wait for the .menu-drawer element's transition, not the entire details subtree
     // This avoids waiting for child accordion/resource-card animations which can cause issues on Firefox

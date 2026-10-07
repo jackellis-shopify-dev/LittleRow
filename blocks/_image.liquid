@@ -2,11 +2,12 @@
   Renders an image block.
 
   @param {string} [loading] - The html loading attribute
-  @param {string} [placeholder] - The placeholder image name to use when no image is provided, defaults to 'hero-apparel-2'
+  @param {string} [placeholder] - Horizon placeholder name (e.g. 'hero-apparel-2'); its trailing number picks the brand placeholder tint
   @param {boolean} [decorative_image] - When true, image uses empty alt (decorative) to avoid duplicating adjacent link text for screen readers
 {%- enddoc -%}
 
 {% assign block_settings = block.settings %}
+{% assign placeholder_index = placeholder | default: 'hero-apparel-2' | split: '-' | last | plus: 0 %}
 {% assign image = closest.collection.featured_image | default: closest.product.featured_image %}
 {% if decorative_image %}
   {% assign alt = '' %}
@@ -42,7 +43,7 @@
     style="--border-radius: {{ block_settings.border_radius }}px;"
     {{ block.shopify_attributes }}
   >
-    {{ placeholder | default: 'hero-apparel-2' | placeholder_svg_tag: 'image-block__placeholder' }}
+    {% render 'brand-placeholder', class: 'image-block__placeholder', index: placeholder_index %}
   </image-block>
 {% endif %}
 

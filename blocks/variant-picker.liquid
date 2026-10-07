@@ -35,6 +35,29 @@
       "default": "buttons"
     },
     {
+      "type": "text",
+      "id": "option_labels",
+      "label": "t:settings.option_labels",
+      "info": "t:info.option_labels"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_low_stock",
+      "label": "t:settings.show_low_stock",
+      "info": "t:info.show_low_stock",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "low_stock_threshold",
+      "label": "t:settings.low_stock_threshold",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "default": 3,
+      "visible_if": "{{ block.settings.show_low_stock }}"
+    },
+    {
       "type": "checkbox",
       "id": "show_swatches",
       "label": "t:settings.swatches",

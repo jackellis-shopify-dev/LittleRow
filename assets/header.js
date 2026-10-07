@@ -7,6 +7,12 @@ import {
   scrollContainerMediaQuery,
 } from '@theme/scroll-container';
 
+/** Scroll distance (px) past which the header enters its compact, scrolled state. */
+const SCROLLED_ENTER_THRESHOLD = 24;
+
+/** Scroll distance (px) below which the header leaves its scrolled state. */
+const SCROLLED_EXIT_THRESHOLD = 4;
+
 /**
  * @typedef {Object} HeaderComponentRefs
  * @property {HTMLDivElement} headerDrawerContainer - The header drawer container element
@@ -171,7 +177,24 @@ class HeaderComponent extends Component {
     });
   };
 
+  /**
+   * Toggles `data-scrolled` once the page has scrolled past a small threshold, so the header can
+   * swap to its compact logo. The state must not change the header's height: heroes and sticky
+   * offsets are sized from the measured header height. Leaving the state uses a lower threshold
+   * so the swap doesn't flicker when scrolling slowly around the boundary.
+   */
+  #updateScrolledState() {
+    const scrollTop = getScrollTop();
+    const isScrolled = this.hasAttribute('data-scrolled')
+      ? scrollTop > SCROLLED_EXIT_THRESHOLD
+      : scrollTop > SCROLLED_ENTER_THRESHOLD;
+
+    this.toggleAttribute('data-scrolled', isScrolled);
+  }
+
   #updateScrollState = () => {
+    this.#updateScrolledState();
+
     const stickyMode = this.getAttribute('sticky');
     if (!this.#offscreen && stickyMode !== 'always') return;
 
@@ -233,6 +256,8 @@ class HeaderComponent extends Component {
       if (stickyMode === 'scroll-up' || stickyMode === 'always') {
         this.#scrollContainer = getScrollEventTarget();
         this.#scrollContainer.addEventListener('scroll', this.#handleWindowScroll);
+        // The page can load already scrolled (reload, back/forward, anchor links).
+        this.#updateScrolledState();
       }
 
       scrollContainerMediaQuery.addEventListener('change', this.#handleBreakpointChange);

@@ -1,0 +1,51 @@
+:root{
+  --sidebar-width:25rem;
+  --theme-drawer-width:30rem;
+  --narrow-content-width:36rem;
+  --normal-content-width:42rem;
+  --narrow-page-width:90rem;
+  --normal-page-width:120rem;
+  --wide-page-width:150rem;
+  --page-width:var(--narrow-page-width);
+
+  --section-height-small:15rem;
+  --section-height-medium:25rem;
+  --section-height-large:35rem;
+
+  --drawer-width:95vw;
+  --drawer-max-width:500px;
+  --drawer-height:100dvh; /* @kind other */
+  --drawer-padding:calc(var(--padding-sm) + 7px);
+
+  --modal-max-height:65dvh; /* @kind other */
+  --quick-add-modal-height:min(38.5rem,96vh); /* @kind other */
+  --quick-add-modal-width:min(54rem,calc(100vw - 4vw)); /* @kind other */
+  --quick-add-modal-gallery-width:24rem;
+
+  --card-width-small:10rem;
+  --height-small:10rem;
+
+  --layer-section-background:-2; /* @kind other */
+  --layer-lowest:-1; /* @kind other */
+  --layer-base:0; /* @kind other */
+  --layer-flat:1; /* @kind other */
+  --layer-raised:2; /* @kind other */
+  --layer-heightened:4; /* @kind other */
+  --layer-sticky:8; /* @kind other */
+  --layer-window-overlay:10; /* @kind other */
+  --layer-header-menu:12; /* @kind other */
+  --layer-overlay:16; /* @kind other */
+  --layer-menu-drawer:18; /* @kind other */
+  --layer-temporary:20; /* @kind other */
+
+  @media screen and (min-width:40em){
+    --section-height-small:40svh;
+    --section-height-medium:55svh;
+    --section-height-large:70svh;
+  }
+  @media screen and (min-width:60em){
+    --section-height-small:50svh;
+    --section-height-medium:65svh;
+    --section-height-large:80svh;
+  }
+}

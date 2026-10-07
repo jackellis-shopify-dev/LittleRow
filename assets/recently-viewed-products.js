@@ -1,35 +1,50 @@
 /**
  * Updates the recently viewed products in localStorage.
+ * Storage can be unavailable (private browsing, blocked site data), so every access is guarded.
  */
 export class RecentlyViewed {
-  /** @static @constant {string} The key used to store the viewed products in session storage */
-  static #STORAGE_KEY = 'viewedProducts';
+  /** @static @constant {string} The key used to store the viewed product ids in localStorage */
+  static #STORAGE_KEY = 'little-row:recently-viewed';
   /** @static @constant {number} The maximum number of products to store */
-  static #MAX_PRODUCTS = 4;
+  static #MAX_PRODUCTS = 6;
 
   /**
-   * Adds a product to the recently viewed products list.
+   * Adds a product to the front of the recently viewed list, removing any earlier entry for it.
    * @param {string} productId - The ID of the product to add.
    */
   static addProduct(productId) {
-    let viewedProducts = this.getProducts();
+    if (!productId) return;
 
-    viewedProducts = viewedProducts.filter((/** @type {string} */ id) => id !== productId);
-    viewedProducts.unshift(productId);
-    viewedProducts = viewedProducts.slice(0, this.#MAX_PRODUCTS);
+    const viewedProducts = [productId, ...this.getProducts().filter((id) => id !== productId)].slice(
+      0,
+      this.#MAX_PRODUCTS
+    );
 
-    localStorage.setItem(this.#STORAGE_KEY, JSON.stringify(viewedProducts));
+    try {
+      localStorage.setItem(this.#STORAGE_KEY, JSON.stringify(viewedProducts));
+    } catch {
+      // Storage unavailable
+    }
   }
 
   static clearProducts() {
-    localStorage.removeItem(this.#STORAGE_KEY);
+    try {
+      localStorage.removeItem(this.#STORAGE_KEY);
+    } catch {
+      // Storage unavailable
+    }
   }
 
   /**
-   * Retrieves the list of recently viewed products from session storage.
+   * Retrieves the recently viewed product ids, newest first.
    * @returns {string[]} The list of viewed products.
    */
   static getProducts() {
-    return JSON.parse(localStorage.getItem(this.#STORAGE_KEY) || '[]');
+    try {
+      const stored = JSON.parse(localStorage.getItem(this.#STORAGE_KEY) || '[]');
+      return Array.isArray(stored) ? stored.map(String) : [];
+    } catch {
+      return [];
+    }
   }
 }

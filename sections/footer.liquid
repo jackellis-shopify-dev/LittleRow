@@ -95,6 +95,117 @@
       grid-column: 1 / -1;
     }
   }
+
+  /* ================================
+   * Little Row footer
+   * ================================ */
+
+  /* Brand column (logo, blurb, sign-up) is wider than the link columns */
+  @media screen and (min-width: 990px) {
+    .footer-content[style*='--grid-columns: 4'] {
+      grid-template-columns: 1.4fr repeat(3, 1fr);
+    }
+
+    /* Five blocks (brand + shop, help, about, legal) stay on one row. Horizon caps the grid at
+       four columns and would drop the fifth onto its own full-width row. */
+    .footer-content:has(> :nth-child(5):last-child) {
+      grid-template-columns: 1.4fr repeat(4, 1fr);
+    }
+
+    .footer-content--isolated-grid-item-desktop:has(> :nth-child(5):last-child) > :last-child {
+      grid-column: auto;
+    }
+  }
+
+  /* Tablet with five blocks: brand across the top, then the four link columns in one row */
+  @media screen and (min-width: 750px) and (max-width: 989px) {
+    .footer-content:has(> :nth-child(5):last-child) {
+      grid-template-columns: repeat(4, 1fr);
+
+      & > :first-child {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .footer-content--isolated-grid-item-tablet:has(> :nth-child(5):last-child) > :last-child {
+      grid-column: auto;
+    }
+  }
+
+  .footer-content > .group-block:first-child {
+    max-width: 320px;
+
+    @media screen and (max-width: 749px) {
+      max-width: none;
+      margin-block-end: var(--gap-xl);
+    }
+  }
+
+  /* Column titles and the sign-up label are small sans headings when the block's heading preset is
+     left on "Default", so choosing a preset still applies. Colours come from each block's
+     text colour settings. */
+  .footer-content
+    :is(.menu__heading, .email-signup__heading):not(.paragraph, .h1, .h2, .h3, .h4, .h5, .h6) {
+    font-family: var(--font-subheading--family);
+    font-size: var(--font-size--sm);
+    font-weight: var(--font-subheading--weight);
+    line-height: var(--line-height--body-normal);
+    text-transform: lowercase;
+  }
+
+  .footer-content .menu__heading__default {
+    font-weight: inherit;
+  }
+
+  /* Link size comes from the menu block's "Link preset"; colour from its text colour setting */
+  .footer-content .menu__item a {
+    text-decoration: none;
+  }
+
+  .footer-content .email-signup__heading {
+    margin-block-end: var(--margin-xs);
+  }
+
+  .footer-content .email-signup__input-group {
+    gap: var(--gap-xs);
+  }
+
+  .footer-content .email-signup__button:not(.email-signup__button--integrated) {
+    padding-block: var(--padding-sm);
+    padding-inline: var(--padding-xl);
+  }
+
+  /* Mobile: link columns stack full width as accordions (Horizon's <accordion-custom>) */
+  @media screen and (max-width: 749px) {
+    .footer-content {
+      gap: 0;
+    }
+
+    .footer-content .menu--accordion .menu__heading {
+      min-height: var(--minimum-touch-target);
+      padding-block: 14px;
+      align-items: center;
+    }
+
+    .footer-content .menu--dividers .menu__details {
+      border-block-end: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10));
+    }
+
+    .footer-content .menu--accordion .details-content {
+      margin-block-start: 0;
+      padding-block-end: var(--padding-lg);
+    }
+
+    .footer-content .menu__item a {
+      display: inline-block;
+      padding-block: 4px;
+    }
+
+    .footer-content .email-signup__input-group:not(.email-signup__input-group--integrated) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}

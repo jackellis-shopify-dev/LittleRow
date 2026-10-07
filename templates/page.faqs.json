@@ -1,0 +1,289 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "blocks": {
+        "heading": {
+          "type": "text",
+          "settings": {
+            "text": "<h1>{{ closest.page.title }}</h1>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "left",
+            "type_preset": "h1"
+          },
+          "blocks": {},
+          "name": "t:names.title"
+        },
+        "page-content": {
+          "type": "page-content",
+          "settings": {},
+          "blocks": {}
+        },
+        "sizing_heading": {
+          "type": "text",
+          "settings": {
+            "text": "<h2>sizing</h2>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "left",
+            "type_preset": "h3"
+          },
+          "blocks": {}
+        },
+        "sizing_accordion": {
+          "type": "accordion",
+          "settings": {
+            "icon": "plus",
+            "dividers": true,
+            "type_preset": "paragraph"
+          },
+          "blocks": {
+            "sizing_row_1": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "how do your sizes run?",
+                "open_by_default": false,
+                "icon": "none"
+              },
+              "blocks": {
+                "sizing_text_1": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>our pieces are cut generously through the body, so there is room to grow. if your little one is between sizes, take the smaller one. every product page has a size guide.</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "sizing_text_1"
+              ]
+            },
+            "sizing_row_2": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "what sizes do you make?",
+                "open_by_default": false,
+                "icon": "none"
+              },
+              "blocks": {
+                "sizing_text_2": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>0-3m, 3-6m, 2-3y and 4-5y. each product page shows the sizes that piece comes in.</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "sizing_text_2"
+              ]
+            }
+          },
+          "block_order": [
+            "sizing_row_1",
+            "sizing_row_2"
+          ]
+        },
+        "fabric_heading": {
+          "type": "text",
+          "settings": {
+            "text": "<h2>fabric & care</h2>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "left",
+            "type_preset": "h3"
+          },
+          "blocks": {}
+        },
+        "fabric_accordion": {
+          "type": "accordion",
+          "settings": {
+            "icon": "plus",
+            "dividers": true,
+            "type_preset": "paragraph"
+          },
+          "blocks": {
+            "fabric_row_1": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "what are your clothes made from?",
+                "open_by_default": false,
+                "icon": "none"
+              },
+              "blocks": {
+                "fabric_text_1": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>organic cotton, soft knits and cosy borg. each product page lists what that piece is made from.</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "fabric_text_1"
+              ]
+            },
+            "fabric_row_2": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "how should i wash them?",
+                "open_by_default": false,
+                "icon": "none"
+              },
+              "blocks": {
+                "fabric_text_2": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>wash at 30 degrees, inside out, with similar colours. reshape knits and dry them flat. skip the tumble dryer to keep everything soft for longer.</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "fabric_text_2"
+              ]
+            }
+          },
+          "block_order": [
+            "fabric_row_1",
+            "fabric_row_2"
+          ]
+        },
+        "orders_heading": {
+          "type": "text",
+          "settings": {
+            "text": "<h2>orders</h2>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "left",
+            "type_preset": "h3"
+          },
+          "blocks": {}
+        },
+        "orders_accordion": {
+          "type": "accordion",
+          "settings": {
+            "icon": "plus",
+            "dividers": true,
+            "type_preset": "paragraph"
+          },
+          "blocks": {
+            "orders_row_1": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "can i add a name to the label?",
+                "open_by_default": false,
+                "icon": "none"
+              },
+              "blocks": {
+                "orders_text_1": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>yes. most pieces can have a name stitched on the label, up to 10 characters, for \u00a34. personalised pieces take 2 days longer to send.</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "orders_text_1"
+              ]
+            },
+            "orders_row_2": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "can i change or cancel my order?",
+                "open_by_default": false,
+                "icon": "none"
+              },
+              "blocks": {
+                "orders_text_2": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>get in touch as soon as you can and we will do our best. once an order has been packed, we can no longer change it.</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "orders_text_2"
+              ]
+            },
+            "orders_row_3": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "where can i find delivery and returns information?",
+                "open_by_default": false,
+                "icon": "none"
+              },
+              "blocks": {
+                "orders_text_3": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>everything is on our <a href=\"/pages/delivery-returns\">delivery & returns</a> page.</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "orders_text_3"
+              ]
+            }
+          },
+          "block_order": [
+            "orders_row_1",
+            "orders_row_2",
+            "orders_row_3"
+          ]
+        }
+      },
+      "block_order": [
+        "heading",
+        "page-content",
+        "sizing_heading",
+        "sizing_accordion",
+        "fabric_heading",
+        "fabric_accordion",
+        "orders_heading",
+        "orders_accordion"
+      ],
+      "settings": {
+        "content_direction": "column",
+        "gap": 32,
+        "padding-block-start": 40,
+        "padding-block-end": 80
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

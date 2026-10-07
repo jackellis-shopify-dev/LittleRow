@@ -65,6 +65,30 @@
     %}
   </span>
 
+  {%- comment -%}
+    Compact logo (e.g. a monogram) shown while the page is scrolled; see `data-scrolled` in header.js.
+  {%- endcomment -%}
+  {% if block_settings.scrolled_logo != blank %}
+    {% liquid
+      assign scrolled_logo = block_settings.scrolled_logo
+      assign scrolled_logo_height = block_settings.scrolled_logo_height
+      assign scrolled_logo_width = scrolled_logo_height | times: scrolled_logo.aspect_ratio | ceil
+      assign scrolled_logo_style = '--header-logo-image-width: [w]px; --header-logo-image-width-mobile: [w]px; --header-logo-image-height: [h]px; --header-logo-image-height-mobile: [h]px;' | replace: '[w]', scrolled_logo_width | replace: '[h]', scrolled_logo_height
+    %}
+    <span
+      class="header-logo__scrolled-image-container"
+      aria-hidden="true"
+    >
+      {% render 'image',
+        image: scrolled_logo,
+        class: 'header-logo__image',
+        height: scrolled_logo_height,
+        alt_text_fallback: '',
+        style: scrolled_logo_style
+      %}
+    </span>
+  {% endif %}
+
   {% if use_inverse_logo %}
     <span
       class="header-logo__transparent-header-image-container"
@@ -138,6 +162,37 @@
   .header-logo__transparent-header-image-container {
     display: var(--header-logo-inverse-display, none);
   }
+
+  /* Scrolled logo: stacked on the main logo in one grid cell and cross-faded in when the header is
+     scrolled. Both logos stay in layout, so the header's height never changes. Hero sections and
+     sticky offsets size themselves from the measured header height (--header-height /
+     --header-group-height), so a header that shrank on scroll would resize the page mid-scroll. */
+  .header-logo:has(.header-logo__scrolled-image-container) {
+    display: grid;
+    place-items: center;
+
+    & > span {
+      grid-area: 1 / 1;
+      transition: opacity 240ms var(--ease-out-cubic), visibility 240ms var(--ease-out-cubic);
+    }
+  }
+
+  .header-logo__scrolled-image-container {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  #header-component[data-scrolled] .header-logo:has(.header-logo__scrolled-image-container) {
+    .header-logo__scrolled-image-container {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    [data-testid='header-logo'] {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -159,6 +214,27 @@
       "id": "hide_logo_on_home_page",
       "label": "t:settings.hide_logo_on_home_page",
       "info": "t:info.hide_logo_on_home_page_help"
+    },
+    {
+      "type": "header",
+      "content": "t:content.scrolled_logo"
+    },
+    {
+      "type": "image_picker",
+      "id": "scrolled_logo",
+      "label": "t:settings.scrolled_logo",
+      "info": "t:info.scrolled_logo"
+    },
+    {
+      "type": "range",
+      "id": "scrolled_logo_height",
+      "label": "t:settings.scrolled_logo_height",
+      "min": 12,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 24,
+      "visible_if": "{{ block.settings.scrolled_logo != blank }}"
     },
     {
       "type": "header",

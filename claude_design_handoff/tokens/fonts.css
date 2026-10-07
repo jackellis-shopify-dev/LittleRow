@@ -1,0 +1,21 @@
+@import url("https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&display=swap");
+
+/* SUBSTITUTION: no brand font binaries were supplied. Newsreader stands in for the serif in
+   the Little Row wordmark and carries display type (h1-h2 only); Familjen Grotesk is the
+   sans that carries everything else - h3 down, body copy, UI, and letterspaced micro-labels. */
+:root{
+  --font-display--family:"Newsreader",Georgia,"Times New Roman",serif;
+  --font-display--weight:500;
+  --font-heading--family:var(--font-display--family);
+  --font-heading--weight:500;
+  --font-heading--style:normal;
+  --font-body--family:"Familjen Grotesk","Helvetica Neue",system-ui,sans-serif;
+  --font-body--weight:400;
+  --font-body--style:normal;
+  --font-subheading--family:var(--font-body--family);
+  --font-subheading--weight:500;
+  --font-subheading--style:normal;
+  --font-accent--family:var(--font-display--family);
+  --font-accent--weight:500;
+  --font-accent--style:normal;
+}

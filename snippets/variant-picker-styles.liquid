@@ -509,4 +509,43 @@
   .variant-option__button-label--has-swatch:has([data-option-available='false']):has(:checked):hover {
     background-color: inherit;
   }
+
+  /* ================================
+   * Little Row variant picker
+   * ================================ */
+
+  /* Option name on the left (Horizon's text style), low-stock note on the right */
+  .variant-option--buttons legend {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--gap-sm);
+    width: 100%;
+  }
+
+  .variant-low-stock {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-xs);
+    font-size: var(--font-size--xs);
+    color: var(--variant-option-label-color, var(--color-foreground));
+  }
+
+  .variant-low-stock__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--color-lowstock);
+  }
+
+  /* Sold-out sizes: a faded border instead of Horizon's diagonal line, text left alone */
+  .variant-option__button-label:not(.variant-option__button-label--has-swatch):has([data-option-available='false']) {
+    .variant-option__strikethrough {
+      display: none;
+    }
+
+    &::before {
+      opacity: 0.5;
+    }
+  }
 {% endstylesheet %}

@@ -1,0 +1,100 @@
+/* Base palette — from the Little Row colour board */
+:root{
+  --lr-off-black:#1A1A1A;
+  --lr-warm-taupe:#A69F92;
+  --lr-soft-cream:#F2EFE6;
+  --lr-sand:#DCCAB5;
+  --lr-white:#FFFFFF;
+
+  --lr-off-black-rgb:26 26 26; /* @kind other */
+  --lr-warm-taupe-rgb:166 159 146; /* @kind other */
+  --lr-soft-cream-rgb:242 239 230; /* @kind other */
+  --lr-sand-rgb:220 202 181; /* @kind other */
+  --lr-white-rgb:255 255 255; /* @kind other */
+
+  /* Tints derived from the four brand colours — no new hues */
+  --lr-cream-deep:#E8E3D6;
+  --lr-sand-light:#EFE4D6;
+  --lr-taupe-light:#C9C3B8;
+  --lr-ink-soft:#3A3833;
+
+  /* Semantic surface + text (mirrors Horizon's color_palette contract) */
+  --color-background:var(--lr-soft-cream);
+  --color-background-rgb:var(--lr-soft-cream-rgb); /* @kind other */
+  --color-foreground:var(--lr-off-black);
+  --color-foreground-rgb:var(--lr-off-black-rgb); /* @kind other */
+  --color-shadow-rgb:var(--lr-off-black-rgb); /* @kind other */
+
+  --surface-page:var(--lr-soft-cream);
+  --surface-card:var(--lr-white);
+  --surface-sunken:var(--lr-cream-deep);
+  --surface-accent:var(--lr-sand);
+  --surface-inverse:var(--lr-off-black);
+
+  --text-body:var(--lr-off-black);
+  --text-subdued:var(--lr-ink-soft);
+  --text-muted:var(--lr-warm-taupe);
+  --text-on-inverse:var(--lr-soft-cream);
+  --text-on-accent:var(--lr-off-black);
+
+  --color-border:var(--lr-taupe-light);
+  --color-border-rgb:201 195 184; /* @kind other */
+  --border-color:rgb(var(--color-foreground-rgb) / var(--opacity-15));
+
+  /* Buttons */
+  --color-primary-button-background:var(--lr-off-black);
+  --color-primary-button-text:var(--lr-soft-cream);
+  --color-primary-button-border:var(--lr-off-black);
+  --color-primary-button-hover-background:var(--lr-ink-soft);
+  --color-primary-button-hover-text:var(--lr-soft-cream);
+  --color-primary-button-hover-border:var(--lr-ink-soft);
+  --color-primary-button-focus-outline:var(--lr-off-black);
+  --color-secondary-button-background:transparent;
+  --color-secondary-button-text:var(--lr-off-black);
+  --color-secondary-button-border:var(--lr-off-black);
+  --color-secondary-button-hover-background:var(--lr-sand);
+  --color-secondary-button-hover-text:var(--lr-off-black);
+  --color-secondary-button-hover-border:var(--lr-off-black);
+
+  /* Inputs */
+  --color-input-background:var(--lr-white);
+  --color-input-text:var(--lr-off-black);
+  --color-input-text-rgb:var(--lr-off-black-rgb); /* @kind other */
+  --color-input-border:var(--lr-taupe-light);
+
+  /* Status — inherited from Horizon */
+  --color-error:#8B0000;
+  --color-success:#006400;
+  --color-instock:#3ED660;
+  --color-lowstock:#EE9441;
+  --color-outofstock:#C8C8C8;
+
+  /* Badges */
+  --badge-sale-background:var(--lr-off-black);
+  --badge-sale-text:var(--lr-soft-cream);
+  --badge-soldout-background:var(--lr-cream-deep);
+  --badge-soldout-text:var(--lr-ink-soft);
+  --badge-new-background:var(--lr-sand);
+  --badge-new-text:var(--lr-off-black);
+
+  /* Opacity ladder (Horizon) */
+  --opacity-5:0.05; /* @kind other */
+  --opacity-8:0.08; /* @kind other */
+  --opacity-10:0.1; /* @kind other */
+  --opacity-15:0.15; /* @kind other */
+  --opacity-20:0.2; /* @kind other */
+  --opacity-25:0.25; /* @kind other */
+  --opacity-30:0.3; /* @kind other */
+  --opacity-40:0.4; /* @kind other */
+  --opacity-50:0.5; /* @kind other */
+  --opacity-60:0.6; /* @kind other */
+  --opacity-70:0.7; /* @kind other */
+  --opacity-80:0.8; /* @kind other */
+  --opacity-85:0.85; /* @kind other */
+  --opacity-90:0.9; /* @kind other */
+  --opacity-subdued-text:0.8; /* @kind other */
+  --opacity-muted-text:0.6; /* @kind other */
+  --backdrop-opacity:0.15; /* @kind other */
+  --disabled-opacity:0.5; /* @kind other */
+  --skeleton-opacity:0.025; /* @kind other */
+}

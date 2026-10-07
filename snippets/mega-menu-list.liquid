@@ -10,6 +10,7 @@
   @param {number} [content_aspect_ratio] - Aspect ratio for content images.
   @param {number} [image_border_radius] - Border radius for content images.
   @param {object} [section] - The section object.
+  @param {number} [max_featured_products_count] - Upper limit on featured products shown beside the links. Defaults to 3.
 
   @example
   {% render 'mega-menu-list', parent_link: link, id: 'MegaMenuList-1', grid_columns_count: 6, menu_content_type: 'featured_products' %}
@@ -133,6 +134,7 @@
         {% endif %}
         <span class="wrap-text">
           {{- link.title -}}
+          {%- render 'menu-link-suffix', link: link, class: 'mega-menu__link-suffix' -%}
         </span>
       </a>
       {% if link.links != blank %}
@@ -153,7 +155,10 @@
                 href="{{ childLink.url }}"
                 class="mega-menu__link"
               >
-                <span class="wrap-text">{{- childLink.title -}}</span>
+                <span class="wrap-text">
+                  {{- childLink.title -}}
+                  {%- render 'menu-link-suffix', link: childLink, class: 'mega-menu__link-suffix' -%}
+                </span>
               </a>
             </li>
           {% endfor %}
@@ -186,9 +191,10 @@
   # decide how many grid columns are needed for the menu list, and how many columns are needed for the featured content
   # prioritize a minimum of 1 featured_collection (2 columns), and minimum 2 featured_products (2 columns)
   assign min_products = 2
-  assign max_products = 3
+  assign max_products = max_featured_products_count | default: 3
+  assign min_products = min_products | at_most: max_products
   assign min_products_tablet = 1
-  assign max_products_tablet = 3
+  assign max_products_tablet = max_products
   assign min_collections = 1
 
   if menu_content_type == 'featured_products'
@@ -196,7 +202,7 @@
     assign temp_column_count = column_count | plus: min_products
 
     if temp_column_count > max_menu_columns
-      assign max_product_columns = 2
+      assign max_product_columns = 2 | at_most: max_products
     else
       assign max_product_columns = max_menu_columns | minus: column_count | at_most: max_products
     endif

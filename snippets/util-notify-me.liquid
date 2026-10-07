@@ -1,0 +1,21 @@
+{%- doc -%}
+  Little Row: echoes `true` when a sold-out buy button should read "notify me" and open the back
+  in stock modal instead (blocks/back-in-stock.liquid, or the Amp app's popup without that block).
+  That needs the "Notify me on sold out variants" theme setting, a product page showing its own
+  product (both belong to the page's product), and a selected variant that exists but is
+  unavailable.
+
+  @param {object} product_resource - The product the button belongs to.
+  @param {object} variant - The variant the button would add.
+
+  @example
+  {%- capture notify_me -%}{% render 'util-notify-me', product_resource: product, variant: variant %}{%- endcapture -%}
+{%- enddoc -%}
+
+{%- liquid
+  if settings.notify_me_when_sold_out and request.page_type == 'product' and product_resource.id == product.id
+    if variant != blank and variant.available == false
+      echo 'true'
+    endif
+  endif
+-%}

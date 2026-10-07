@@ -22,6 +22,9 @@
     assign has_custom_variant_buttons = true
   endif
   assign fieldset_index = 0
+
+  # Little Row: "Label overrides" setting, e.g. "Size: size & age" (comma-separated)
+  assign option_label_entries = block_settings.option_labels | split: ','
 %}
 
 {% unless product_resource.has_only_default_variant %}
@@ -93,11 +96,32 @@
             ref="fieldsets[]"
             {{ option_id_attribute }}
           >
+            {%- liquid
+              assign option_label = product_option.name
+              assign option_label_downcase = product_option.name | downcase
+              for entry in option_label_entries
+                assign entry_parts = entry | split: ':'
+                assign entry_name = entry_parts.first | strip | downcase
+                if entry_parts.size > 1 and entry_name == option_label_downcase
+                  assign option_label = entry_parts.last | strip
+                  break
+                endif
+              endfor
+            -%}
             <legend>
-              {{ product_option.name | escape -}}
-              {%- if variant_style == 'swatch' -%}
-                <span class="variant-option__swatch-value">{{ product_option.selected_value }}</span>
-              {%- endif %}
+              <span class="variant-option__label">
+                {{- option_label | escape -}}
+                {%- if variant_style == 'swatch' -%}
+                  <span class="variant-option__swatch-value">{{ product_option.selected_value }}</span>
+                {%- endif -%}
+              </span>
+              {%- if forloop.last and block_settings.show_low_stock -%}
+                {%- render 'variant-low-stock',
+                  product: product_resource,
+                  product_option: product_option,
+                  threshold: block_settings.low_stock_threshold
+                -%}
+              {%- endif -%}
             </legend>
             {%- for product_option_value in product_option.values -%}
               {% if product_option_value.size > longest_value and option_id_attribute %}

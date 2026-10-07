@@ -1,0 +1,14 @@
+{%- doc -%}
+  Renders a " - coming soon" suffix after a menu link title when the link points at a product
+  that isn't available yet. The suffix comes from the product, not the link title.
+
+  @param {object} link - The menu link.
+  @param {string} [class] - Class for the suffix span.
+
+  @example
+  {{ link.title }}{% render 'menu-link-suffix', link: link, class: 'mega-menu__link-suffix' %}
+{%- enddoc -%}
+
+{%- if link.type == 'product_link' and link.object.available == false -%}
+  <span class="{{ class }}"> - {{ 'content.coming_soon' | t }}</span>
+{%- endif -%}

@@ -167,6 +167,8 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       cartItemRowToRemove,
       // Get all nested lines of the row to remove
       ...this.refs.cartItemRows.filter((row) => row.dataset.parentKey === cartItemRowToRemove.dataset.key),
+      // Little Row: a gift box never stays in the cart on its own
+      ...this.#orphanedGiftBoxRows(cartItemRowToRemove),
     ];
 
     // If the cart item row is the last row, optimistically trigger the cart empty state
@@ -199,6 +201,23 @@ export class CartItemsComponent extends createViewEventElement(Component) {
   }
 
   /**
+   * Little Row gift box: the hidden gift box rows (data-gift-box) that would be the only lines left
+   * once the given row and its nested lines are removed.
+   * @param {HTMLTableRowElement | undefined} removedRow - The row being removed.
+   * @returns {HTMLTableRowElement[]} The gift box rows to remove with it.
+   */
+  #orphanedGiftBoxRows(removedRow) {
+    if (!removedRow) return [];
+
+    const remainingRows = this.refs.cartItemRows.filter(
+      (row) =>
+        row !== removedRow && row.dataset.parentKey !== removedRow.dataset.key && !row.classList.contains('removing')
+    );
+
+    return remainingRows.every((row) => row.hasAttribute('data-gift-box')) ? remainingRows : [];
+  }
+
+  /**
    * Updates the quantity.
    * @param {Object} config - The config.
    * @param {number} config.line - The line.
@@ -221,12 +240,46 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       }
     });
 
-    const body = JSON.stringify({
-      line: line,
-      quantity: quantity,
-      sections: Array.from(sectionsToUpdate).join(','),
-      sections_url: window.location.pathname,
-    });
+    // Little Row personalisation: nested fee lines marked data-quantity-follows-parent always match
+    // their garment, so a quantity change updates both lines in one cart/update.js request.
+    const changedRow = this.refs.cartItemRows[line - 1];
+    const followerKeys =
+      quantity > 0 && changedRow?.dataset.key
+        ? this.refs.cartItemRows
+            .filter((row) => row.dataset.parentKey === changedRow.dataset.key)
+            .filter((row) => row.hasAttribute('data-quantity-follows-parent'))
+            .map((row) => row.dataset.key)
+            .filter(Boolean)
+        : [];
+
+    // Little Row gift box: removing the last piece also removes the gift box, in the same request.
+    const giftBoxKeys =
+      quantity === 0 && changedRow?.dataset.key
+        ? this.#orphanedGiftBoxRows(changedRow)
+            .map((row) => row.dataset.key)
+            .filter(Boolean)
+        : [];
+
+    const sections = Array.from(sectionsToUpdate).join(',');
+    const sectionsUrl = window.location.pathname;
+    const useUpdate = followerKeys.length + giftBoxKeys.length > 0 && Boolean(changedRow?.dataset.key);
+    const cartUrl = useUpdate ? Theme.routes.cart_update_url : Theme.routes.cart_change_url;
+
+    const body = useUpdate
+      ? JSON.stringify({
+          updates: Object.fromEntries([
+            ...[/** @type {string} */ (changedRow?.dataset.key), ...followerKeys].map((key) => [key, quantity]),
+            ...giftBoxKeys.map((key) => [key, 0]),
+          ]),
+          sections,
+          sections_url: sectionsUrl,
+        })
+      : JSON.stringify({
+          line: line,
+          quantity: quantity,
+          sections,
+          sections_url: sectionsUrl,
+        });
 
     cartTotal?.shimmer();
 
@@ -241,12 +294,17 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       })
     );
 
-    fetch(`${Theme.routes.cart_change_url}`, fetchConfig('json', { body }))
+    fetch(`${cartUrl}`, fetchConfig('json', { body }))
       .then((response) => {
         return response.text();
       })
       .then((responseText) => {
         const parsedResponseText = JSON.parse(responseText);
+
+        // cart/update.js reports failures as { status, description } rather than { errors }
+        if (useUpdate && parsedResponseText.status && !parsedResponseText.errors) {
+          parsedResponseText.errors = parsedResponseText.description || parsedResponseText.message;
+        }
 
         resetShimmer(this);
 

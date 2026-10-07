@@ -188,4 +188,27 @@
       background-color: color-mix(in srgb, var(--contrast-color) 6%, var(--color-background));
     }
   }
+
+  /* Little Row: drawer close buttons (cart, filters, pickup availability) match the theme's other
+     exits (search overlay, menu drawer, dialogs): a bare × in the text colour on a 44px target,
+     with no circle, border or shadow. Negative margins line the icon up with the header padding
+     without making the header taller. */
+  .theme-drawer__close-button,
+  .theme-drawer__close-button:hover:not(:active) {
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    margin-block: calc((var(--minimum-touch-target) - var(--icon-size-xs)) / -2);
+    margin-inline-end: calc((var(--minimum-touch-target) - var(--icon-size-xs)) / -2);
+    padding: 0;
+    color: var(--color-foreground);
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+
+    .svg-wrapper,
+    svg {
+      width: var(--icon-size-xs);
+      height: var(--icon-size-xs);
+    }
+  }
 {% endstylesheet %}

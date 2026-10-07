@@ -71,6 +71,9 @@
         {% if menu %}
           <ul class="list-unstyled">
             {% for link in menu.links %}
+              {%- if block_settings.hide_childless_links and link.links == blank -%}
+                {%- continue -%}
+              {%- endif -%}
               <li class="menu__item {{ block_settings.link_preset }}">
                 <a href="{{ link.url }}">
                   {{ link.title }}{% if link.data_sharing_opt_out_icon %}{{ link.data_sharing_opt_out_icon }}{% endif %}
@@ -164,6 +167,13 @@
       "type": "text",
       "id": "heading",
       "label": "t:settings.heading"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_childless_links",
+      "label": "t:settings.hide_childless_links",
+      "info": "t:info.hide_childless_links",
+      "default": false
     },
     {
       "type": "header",

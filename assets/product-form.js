@@ -69,6 +69,13 @@ export class AddToCartComponent extends Component {
    * @param {MouseEvent & {target: HTMLElement}} event - The click event.
    */
   handleClick(event) {
+    // Little Row: a sold-out variant's button reads "notify me" (util-notify-me) and opens the
+    // Amp back in stock popup instead of adding to cart.
+    if (this.refs.addToCartButton.hasAttribute('data-notify-me')) {
+      this.#openNotifyMe();
+      return;
+    }
+
     const form = this.closest('form');
     if (!form?.checkValidity()) return;
 
@@ -89,6 +96,38 @@ export class AddToCartComponent extends Component {
       }
       this.animateAddToCart();
     }
+  }
+
+  /**
+   * Opens the back in stock modal (blocks/back-in-stock.liquid) in this section for the button's
+   * variant, or the Amp app's own popup when that block isn't on the page. Both belong to the
+   * page's own product, so from a quick add modal this goes to the product page instead.
+   */
+  #openNotifyMe() {
+    const button = this.refs.addToCartButton;
+    const { variantId, productUrl } = button.dataset;
+
+    // The sticky bar clicks this button as a puppet; nothing is added, so clear the flag here.
+    button.dataset.puppet = 'false';
+
+    if (this.closest('.quick-add-modal')) {
+      if (productUrl) window.location.assign(`${productUrl}?variant=${variantId}`);
+      return;
+    }
+
+    const modal = /** @type {any} */ (this.closest('.shopify-section')?.querySelector('back-in-stock-component'));
+    if (typeof modal?.open === 'function') {
+      modal.open(variantId);
+      return;
+    }
+
+    const popup = /** @type {any} */ (window).BIS?.popup;
+    if (typeof popup?.show !== 'function') {
+      console.warn('[notify me] The Amp back in stock app embed is not loaded.');
+      return;
+    }
+
+    popup.show({ variantId: Number(variantId) });
   }
 
   #preloadImage = () => {
@@ -367,8 +406,10 @@ class ProductFormComponent extends Component {
     );
 
     if (!overrideVariantId) {
+      // Little Row: a "notify me" button (sold out) counts as disabled.
       const anyButtonDisabled = Array.from(allAddToCartContainers).some(
-        (container) => container.refs.addToCartButton?.disabled
+        (container) =>
+          container.refs.addToCartButton?.disabled || container.refs.addToCartButton?.hasAttribute('data-notify-me')
       );
       if (anyButtonDisabled) return;
     }
@@ -452,7 +493,12 @@ class ProductFormComponent extends Component {
       })
     );
 
-    const fetchCfg = fetchConfig('javascript', { body: formData });
+    // Little Row personalisation: when a name has been added, the garment and its fee are added
+    // together, with the fee as a nested cart line under the garment (removed with it by Shopify).
+    const personalisedPayload = this.#buildPersonalisedPayload(formData);
+    const fetchCfg = personalisedPayload
+      ? fetchConfig('json', { body: JSON.stringify(personalisedPayload) })
+      : fetchConfig('javascript', { body: formData });
 
     fetch(Theme.routes.cart_add_url, {
       ...fetchCfg,
@@ -581,6 +627,41 @@ class ProductFormComponent extends Component {
           cartPerformance.measureFromEvent('add:user-action', event);
         }
       });
+  }
+
+  /**
+   * Builds a JSON /cart/add.js payload for a personalised add: the garment with its line item
+   * properties, and the personalisation fee variant nested under it via `parent_id`. The fee line
+   * only carries `_personalisation: fee`; the name and thread live on the garment line alone, so
+   * the cart, checkout and order show them once.
+   * Returns null when no personalisation is applied (blocks/personalisation.liquid leaves the
+   * fee input disabled, so it isn't in the form data).
+   * @param {FormData} formData
+   * @returns {object | null}
+   */
+  #buildPersonalisedPayload(formData) {
+    const feeVariantId = Number(formData.get('personalisation_fee_variant'));
+    const variantId = Number(formData.get('id'));
+    if (!feeVariantId || !variantId) return null;
+
+    const quantity = Number(formData.get('quantity')) || 1;
+
+    /** @type {Record<string, string>} */
+    const properties = {};
+    for (const [key, value] of formData.entries()) {
+      const match = key.match(/^properties\[(.+)\]$/);
+      if (match?.[1] && typeof value === 'string' && value !== '') properties[match[1]] = value;
+    }
+
+    /** @type {{ id: number, quantity: number, properties: Record<string, string>, selling_plan?: number }} */
+    const garment = { id: variantId, quantity, properties };
+    const sellingPlan = Number(formData.get('selling_plan'));
+    if (sellingPlan) garment.selling_plan = sellingPlan;
+
+    return {
+      items: [garment, { id: feeVariantId, quantity, parent_id: variantId, properties: { _personalisation: 'fee' } }],
+      sections: [...new Set(formData.getAll('sections').join(',').split(',').filter(Boolean))].join(','),
+    };
   }
 
   /** @param {Array<{variantId: string, quantity: number}>} items */
@@ -817,6 +898,7 @@ class ProductFormComponent extends Component {
       const newAddToCartButton = html.querySelector('product-form-component [ref="addToCartButton"]');
       if (newAddToCartButton && currentAddToCartButton) {
         morph(currentAddToCartButton, newAddToCartButton);
+        this.#syncNotifyMeState(currentAddToCartButton, newAddToCartButton);
       }
 
       if (acceleratedCheckoutButtonContainer) {
@@ -1108,12 +1190,37 @@ class ProductFormComponent extends Component {
   }
 
   /**
+   * Little Row: copies the "notify me" state (util-notify-me) onto the add-to-cart button after a
+   * variant change. morph() only updates the button's children, so without this the button keeps
+   * the type, name and data-notify-me it had when the page loaded.
+   * @param {HTMLButtonElement} button - The live add-to-cart button.
+   * @param {Element} newButton - The button from the re-rendered section.
+   */
+  #syncNotifyMeState(button, newButton) {
+    for (const name of ['type', 'name', 'data-notify-me', 'data-variant-id', 'data-product-url']) {
+      const value = newButton.getAttribute(name);
+      if (value == null) {
+        button.removeAttribute(name);
+      } else {
+        button.setAttribute(name, value);
+      }
+    }
+
+    // #onProductSelect disables the button for an unavailable variant; notify me stays clickable.
+    if (button.hasAttribute('data-notify-me')) button.disabled = false;
+  }
+
+  /**
    * Whether the current selection's add-to-cart button is disabled (unavailable selection).
    * @returns {boolean}
    */
   #isAddToCartDisabled() {
     const containers = /** @type {NodeListOf<AddToCartComponent>} */ (this.querySelectorAll('add-to-cart-component'));
-    return Array.from(containers).some((container) => container.refs.addToCartButton?.disabled);
+    // Little Row: a "notify me" button (sold out) counts as disabled.
+    return Array.from(containers).some(
+      (container) =>
+        container.refs.addToCartButton?.disabled || container.refs.addToCartButton?.hasAttribute('data-notify-me')
+    );
   }
 }
 

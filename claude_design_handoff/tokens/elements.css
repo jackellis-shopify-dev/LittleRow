@@ -1,0 +1,89 @@
+:root{
+  /* Buttons */
+  --button-size-md:36px;
+  --minimum-touch-target:44px; /* @kind other */
+  --button-size:var(--minimum-touch-target);
+  --button-padding-inline:24px;
+  --button-padding-block:16px;
+  --button-font-family-primary:var(--font-subheading--family);
+  --button-font-family-secondary:var(--font-subheading--family);
+  --button-text-case-primary:lowercase; /* @kind other */
+  --button-text-case-secondary:lowercase; /* @kind other */
+  --checkout-button-gap:10px;
+  --height-buy-buttons:calc(var(--padding-lg) * 2 + var(--icon-size-sm));
+
+  /* Inputs */
+  --input-padding-y:0.8rem;
+  --input-padding-x:0.8rem;
+  --input-padding:var(--input-padding-y) var(--input-padding-x); /* @kind other */
+  --input-box-shadow-width:var(--style-border-width-inputs); /* @kind other */
+  --input-box-shadow:0 0 0 var(--input-box-shadow-width) var(--color-input-border);
+  --input-box-shadow-focus:0 0 0 calc(var(--input-box-shadow-width) + 0.5px) var(--color-foreground);
+  --input-disabled-background-color:rgb(var(--color-foreground-rgb) / var(--opacity-10));
+  --input-disabled-border-color:rgb(var(--color-foreground-rgb) / var(--opacity-5));
+  --input-disabled-text-color:rgb(var(--color-foreground-rgb) / var(--opacity-50));
+  --input-textarea-min-height:55px;
+
+  /* Checkbox / radio */
+  --checkbox-size:22px; /* @kind other */
+  --checkbox-border-radius:7px;
+  --checkbox-border:1px solid rgb(var(--color-foreground-rgb) / var(--opacity-40)); /* @kind other */
+  --checkbox-label-padding:8px;
+  @media screen and (min-width:750px){
+    --checkbox-size:16px;
+    --checkbox-border-radius:5px;
+    --checkbox-label-padding:6px;
+  }
+
+  /* Icons */
+  --icon-size-2xs:0.6rem;
+  --icon-size-xs:0.85rem;
+  --icon-size-sm:1.25rem;
+  --icon-size-md:1.375rem;
+  --icon-size-lg:1.5rem;
+  --icon-stroke-width:1.5px; /* @kind other */
+
+  /* Badges */
+  --badge-rectangle-padding-block:1px;
+  --badge-rectangle-padding-inline:6px;
+  @media screen and (min-width:750px){
+    --badge-rectangle-padding-block:4px;
+    --badge-rectangle-padding-inline:10px;
+  }
+
+  /* Variant swatches / buttons */
+  --variant-picker-swatch-width:34px;
+  --variant-picker-swatch-height:34px;
+  --variant-picker-swatch-radius:32px;
+  --variant-picker-border-width:1px;
+  --variant-picker-border-style:solid; /* @kind other */
+  --variant-picker-border-opacity:100%; /* @kind other */
+  --variant-picker-button-radius:14px;
+
+  /* Cards in search / hover */
+  --card-bg-hover:rgb(var(--color-foreground-rgb) / var(--opacity-5));
+  --card-border-hover:rgb(var(--color-foreground-rgb) / var(--opacity-30));
+  --card-border-focus:rgb(var(--color-foreground-rgb) / var(--opacity-10));
+
+  /* Slideshow */
+  --slideshow-controls-icon:2rem;
+  --peek-next-slide-size:3rem;
+}
+
+/* Baseline element styling so cards and kits inherit brand type without extra work */
+body{font-family:var(--font-body--family);font-weight:var(--font-body--weight);font-size:var(--font-paragraph--size);line-height:var(--font-paragraph--line-height);color:var(--text-body);background:var(--surface-page);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0 0 var(--font-heading--spacing);text-transform:lowercase}
+/* Lowercase experiment: the brand voice is all lower case, so buttons, badges and form
+   controls follow the headings. Proper nouns in body copy are written lower case at source. */
+button,.lr-badge,select,option,input::placeholder,textarea::placeholder{text-transform:lowercase}
+h1,h2{font-family:var(--font-heading--family);font-weight:var(--font-heading--weight)}
+h3,h4{font-family:var(--font-subheading--family);font-weight:600;letter-spacing:var(--letter-spacing--heading-tight)}
+h1{font-size:var(--font-size--h1);line-height:var(--line-height--display-tight)}
+h2{font-size:var(--font-size--h2);line-height:var(--line-height--display-tight)}
+h3{font-size:var(--font-size--h3);line-height:var(--line-height--display-normal)}
+h4{font-size:var(--font-size--h4);line-height:var(--line-height--display-tight)}
+h5,h6{font-family:var(--font-subheading--family);font-weight:var(--font-subheading--weight);margin:0}
+p{margin:0 0 var(--font-paragraph--spacing)}
+a{color:var(--text-body);text-decoration:none}
+a:hover{color:rgb(var(--color-foreground-rgb) / var(--opacity-70))}
+.lr-label{font-family:var(--font-label--family);font-size:var(--font-label--size);letter-spacing:var(--letter-spacing--label);text-transform:lowercase;color:var(--text-muted)}

@@ -177,6 +177,9 @@ class StickyAddToCartComponent extends Component {
     if (!this.#targetAddToCartButton) return;
     this.#targetAddToCartButton.dataset.puppet = 'true';
     this.#targetAddToCartButton.click();
+
+    // Little Row: "notify me" (sold out) opens the back in stock popup, so skip the fly-to-cart.
+    if (this.refs.addToCartButton.hasAttribute('data-notify-me')) return;
     const cartIcon = document.querySelector('.header-actions__cart-icon');
 
     if (this.refs.addToCartButton.dataset.added !== 'true') {
@@ -384,7 +387,7 @@ class StickyAddToCartComponent extends Component {
   #updateButtonText() {
     const { addToCartButton, quantityDisplay, quantityNumber } = this.refs;
 
-    const available = !addToCartButton.disabled;
+    const available = !addToCartButton.disabled && !addToCartButton.hasAttribute('data-notify-me');
 
     // Update the quantity number
     quantityNumber.textContent = this.#currentQuantity.toString();

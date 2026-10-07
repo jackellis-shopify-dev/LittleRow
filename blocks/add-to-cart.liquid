@@ -11,6 +11,32 @@
   assign class = 'add-to-cart-button ' | append: block.settings.style_class | append: ' ' | append: scoped_class
   assign id = 'BuyButtons-ProductSubmitButton-' | append: block.id
 %}
+{%- comment -%} Little Row: sold out reads "notify me" (see util-notify-me) {%- endcomment -%}
+{%- capture notify_me_output -%}
+  {%- render 'util-notify-me',
+    product_resource: closest.product,
+    variant: closest.product.selected_or_first_available_variant
+  -%}
+{%- endcapture -%}
+{%- liquid
+  assign notify_me = false
+  if notify_me_output == 'true'
+    assign notify_me = true
+  endif
+-%}
+{%- if settings.notify_me_when_sold_out and request.page_type == 'product' -%}
+  {%- comment -%}
+    Little Row: the Amp widget injects its own notify button (#BIS_trigger) beside this one. It
+    reads the variant from the page URL's ?variant=, which Horizon never updates on a size change,
+    so it stays shown or hidden for whichever size the page loaded on. This button replaces it.
+  {%- endcomment -%}
+  {% style %}
+    #BIS_trigger,
+    .BIS_trigger {
+      display: none !important;
+    }
+  {% endstyle %}
+{%- endif -%}
 {% render 'button-custom-styles', block_settings: block.settings, block_id: block.id %}
 {% render 'add-to-cart-button-styles' %}
 {% render 'fly-to-cart-styles' %}
@@ -26,6 +52,7 @@
     show_icon: can_add_to_cart,
     product: closest.product,
     add_to_cart_text: add_to_cart_text,
+    notify_me: notify_me,
     data_testid: 'standalone-add-to-cart'
   %}
 </span>

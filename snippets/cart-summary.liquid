@@ -41,8 +41,20 @@
     {%- endif -%}
   </div>
 
-  {% if settings.show_cart_note or settings.show_add_discount_code %}
+  {%- comment -%} Little Row: the gift box option is the first row; it renders nothing when unavailable {%- endcomment -%}
+  {%- capture cart_gift_box -%}
+    {%- render 'cart-gift-box' -%}
+  {%- endcapture -%}
+  {%- assign cart_gift_box = cart_gift_box | strip -%}
+
+  {% if settings.show_cart_note or settings.show_add_discount_code or cart_gift_box != blank %}
     <div class="cart-actions">
+      {% if cart_gift_box != blank %}
+        {{ cart_gift_box }}
+        {% if settings.show_cart_note or settings.show_add_discount_code %}
+          <div class="cart-actions__divider"></div>
+        {% endif %}
+      {% endif %}
       {% if settings.show_cart_note %}
         <script
           type="module"
@@ -606,7 +618,7 @@
     display: flex;
     align-items: flex-start;
     gap: var(--gap-2xs);
-    font-size: var(--font-size--2xs);
+    font-size: var(--font-size--sm);
     font-weight: 500;
   }
 

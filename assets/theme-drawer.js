@@ -7,6 +7,12 @@ import { getScrollTop, scrollTo } from '@theme/scroll-container';
 const MODAL_BREAKPOINT = 990;
 
 /**
+ * Little Row: the "Overlay page on desktop" theme setting (set on <html> by theme-drawer.liquid)
+ * makes the drawer a modal overlay at every width, like the mobile menu.
+ */
+const ALWAYS_MODAL = document.documentElement.hasAttribute('data-drawer-overlay');
+
+/**
  * A drawer that opens from the right side.
  *
  * On wide viewports (≥ 990px) the drawer squeezes page content alongside it.
@@ -44,7 +50,7 @@ export class ThemeDrawer extends Component {
   #previouslyFocused = null;
 
   /** @type {MediaQueryList} */
-  #modalQuery = window.matchMedia(`(max-width: ${MODAL_BREAKPOINT - 1}px)`);
+  #modalQuery = window.matchMedia(ALWAYS_MODAL ? 'all' : `(max-width: ${MODAL_BREAKPOINT - 1}px)`);
 
   /**
    * @returns {boolean} Whether the drawer is currently open.

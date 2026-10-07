@@ -14,6 +14,16 @@
 
 {% render 'theme-drawer-styles' %}
 
+{%- if settings.drawer_overlay_desktop -%}
+  {%- comment -%}
+    Little Row: "Overlay page on desktop". theme-drawer.js reads this to open drawers as a modal
+    overlay at every width, and the scripts below never squeeze the page.
+  {%- endcomment -%}
+  <script>
+    document.documentElement.setAttribute('data-drawer-overlay', '');
+  </script>
+{%- endif -%}
+
 <script
   type="module"
   src="{{ 'theme-drawer.js' | asset_url }}"
@@ -31,6 +41,8 @@
     // drawer is a modal overlay — let it start closed after navigation rather
     // than re-opening a fullscreen dialog the user may have left behind.
     if (!window.matchMedia('(min-width: 990px)').matches) return;
+    // Little Row: with "Overlay page on desktop" drawers are modal everywhere, so the same applies.
+    if (document.documentElement.hasAttribute('data-drawer-overlay')) return;
 
     var dialogs = [];
     for (var i = 0; i < drawerIds.length; i++) {
@@ -83,7 +95,10 @@
   type="module"
 >
   const pageWrapper = document.querySelector('.page-wrapper');
-  const squeezeQuery = window.matchMedia('(min-width: 990px)');
+  // Little Row: with "Overlay page on desktop" the page is never squeezed ('not all' never matches).
+  const squeezeQuery = window.matchMedia(
+    document.documentElement.hasAttribute('data-drawer-overlay') ? 'not all' : '(min-width: 990px)'
+  );
 
   // ── Squeeze coordination ──
   // Listens to all drawers. Only squeezes on wide viewports.

@@ -1,0 +1,20 @@
+{%- doc -%}
+  Echoes the CSS font-family for an embroidery font name from the personalisation metaobject's
+  `fonts` list (e.g. "rockwell bold"). Matching ignores case and looks for the family name, so
+  "Rockwell Bold" and "rockwell" both match. Echoes nothing for a name with no font file in the
+  theme (the font faces live in `brand-tokens`).
+
+  @param {string} name - The font name, e.g. "clarendon bold".
+
+  @example
+  {%- capture font_family -%}{% render 'util-embroidery-font', name: 'rockwell bold' %}{%- endcapture -%}
+{%- enddoc -%}
+
+{%- liquid
+  assign font_name = name | strip | downcase
+  if font_name contains 'rockwell'
+    echo 'var(--font-embroidery-rockwell--family)'
+  elsif font_name contains 'clarendon'
+    echo 'var(--font-embroidery-clarendon--family)'
+  endif
+-%}

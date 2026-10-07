@@ -1,0 +1,121 @@
+:root{
+  /* Sizes — Horizon theme settings: paragraph 14, h1 56, h2 48, h3 32, h4 24, h5 14, h6 12 */
+  --font-size--paragraph:0.875rem;
+  --font-size--h1:clamp(3rem,5.6vw,3.5rem);
+  --font-size--h2:clamp(2.5rem,4.8vw,3rem);
+  --font-size--h3:2rem;
+  --font-size--h4:1.5rem;
+  --font-size--h5:0.875rem;
+  --font-size--h6:0.75rem;
+
+  --font-size--3xs:0.625rem;
+  --font-size--2xs:0.75rem;
+  --font-size--xs:0.8125rem;
+  --font-size--sm:0.875rem;
+  --font-size--md:1rem;
+  --font-size--lg:1.125rem;
+  --font-size--xl:1.25rem;
+  --font-size--2xl:1.5rem;
+  --font-size--3xl:2rem;
+  --font-size--4xl:2.5rem;
+  --font-size--5xl:3rem;
+  --font-size--6xl:3.5rem;
+
+  /* Line height */
+  --line-height:1; /* @kind other */
+  --line-height--display-tight:1; /* @kind other */
+  --line-height--display-normal:1.1; /* @kind other */
+  --line-height--display-loose:1.2; /* @kind other */
+  --line-height--heading-tight:1.15; /* @kind other */
+  --line-height--heading-normal:1.25; /* @kind other */
+  --line-height--heading-loose:1.35; /* @kind other */
+  --line-height--body-tight:1.2; /* @kind other */
+  --line-height--body-normal:1.4; /* @kind other */
+  --line-height--body-loose:1.6; /* @kind other */
+
+  /* Tracking */
+  --letter-spacing-sm:0.06em; /* @kind other */
+  --letter-spacing--display-tight:-0.03em; /* @kind other */
+  --letter-spacing--display-normal:0em; /* @kind other */
+  --letter-spacing--display-loose:0.03em; /* @kind other */
+  --letter-spacing--heading-tight:-0.03em; /* @kind other */
+  --letter-spacing--heading-normal:0em; /* @kind other */
+  --letter-spacing--heading-loose:0.03em; /* @kind other */
+  --letter-spacing--body-tight:-0.03em; /* @kind other */
+  --letter-spacing--body-normal:0em; /* @kind other */
+  --letter-spacing--body-loose:0.03em; /* @kind other */
+  --letter-spacing--label:0.16em; /* @kind other */
+
+  /* Micro-label case — the brand voice is all lower case; set to uppercase to revert */
+  --label-text-case:lowercase; /* @kind other */
+
+  /* Presets */
+  --font-paragraph--family:var(--font-body--family);
+  --font-paragraph--size:var(--font-size--paragraph);
+  --font-paragraph--weight:400; /* @kind other */
+  --font-paragraph--style:normal; /* @kind other */
+  --font-paragraph--line-height:var(--line-height--body-loose); /* @kind other */
+  --font-paragraph--case:none; /* @kind other */
+
+  --font-h1--family:var(--font-heading--family);
+  --font-h1--size:var(--font-size--h1);
+  --font-h1--weight:var(--font-heading--weight); /* @kind other */
+  --font-h1--line-height:var(--line-height--display-tight); /* @kind other */
+  --font-h1--letter-spacing:var(--letter-spacing--heading-normal); /* @kind other */
+  --font-h1--case:none; /* @kind other */
+
+  --font-h2--family:var(--font-heading--family);
+  --font-h2--size:var(--font-size--h2);
+  --font-h2--weight:var(--font-heading--weight); /* @kind other */
+  --font-h2--line-height:var(--line-height--display-tight); /* @kind other */
+  --font-h2--letter-spacing:var(--letter-spacing--heading-normal); /* @kind other */
+
+  /* h3 and below are sans - serif is reserved for h1-h2 display moments */
+  --font-h3--family:var(--font-subheading--family);
+  --font-h3--size:var(--font-size--h3);
+  --font-h3--weight:600; /* @kind other */
+  --font-h3--line-height:var(--line-height--display-normal); /* @kind other */
+  --font-h3--letter-spacing:var(--letter-spacing--heading-tight); /* @kind other */
+
+  --font-h4--family:var(--font-subheading--family);
+  --font-h4--size:var(--font-size--h4);
+  --font-h4--weight:600; /* @kind other */
+  --font-h4--line-height:var(--line-height--display-tight); /* @kind other */
+  --font-h4--letter-spacing:var(--letter-spacing--heading-tight); /* @kind other */
+
+  --font-h5--family:var(--font-subheading--family);
+  --font-h5--size:var(--font-size--h5);
+  --font-h5--weight:var(--font-subheading--weight); /* @kind other */
+  --font-h5--line-height:var(--line-height--display-loose); /* @kind other */
+
+  --font-h6--family:var(--font-subheading--family);
+  --font-h6--size:var(--font-size--h6);
+  --font-h6--weight:var(--font-subheading--weight); /* @kind other */
+  --font-h6--line-height:var(--line-height--display-loose); /* @kind other */
+
+  /* Label preset — letterspaced caps, used for eyebrows and micro UI */
+  --font-label--family:var(--font-subheading--family);
+  --font-label--size:var(--font-size--3xs);
+  --font-label--weight:400; /* @kind other */
+  --font-label--case:uppercase; /* @kind other */
+  --font-label--letter-spacing:var(--letter-spacing--label); /* @kind other */
+
+  /* Heading margins */
+  --font-heading--spacing:0.25em;
+  --font-paragraph--spacing:0.5em;
+
+  /* Measure */
+  --max-width--body-normal:32.5em;
+  --max-width--body-narrow:22.75em;
+  --max-width--heading-normal:32.5em;
+  --max-width--heading-narrow:19.5em;
+  --max-width--display-normal:13em;
+  --max-width--display-narrow:9.75em;
+  --max-width--display-tight:3.25em;
+
+  /* Menu sizes */
+  --menu-font-sm--size:0.875rem;
+  --menu-font-md--size:1rem;
+  --menu-font-xl--size:1.25rem;
+  --menu-font-2xl--size:1.75rem;
+}

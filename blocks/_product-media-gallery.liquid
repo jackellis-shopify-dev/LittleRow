@@ -63,6 +63,17 @@
       "visible_if": "{{ block.settings.media_presentation == 'grid' }}"
     },
     {
+      "type": "range",
+      "id": "image_gap_mobile",
+      "label": "t:settings.mobile_gap",
+      "info": "t:info.mobile_gap",
+      "min": 0,
+      "max": 40,
+      "unit": "px",
+      "step": 1,
+      "default": 16
+    },
+    {
       "type": "checkbox",
       "id": "large_first_image",
       "label": "t:settings.full_width_first_image",
@@ -205,6 +216,10 @@
         {
           "value": "1/1.25",
           "label": "t:options.portrait"
+        },
+        {
+          "value": "3/4",
+          "label": "t:options.portrait_tall"
         },
         {
           "value": "1",

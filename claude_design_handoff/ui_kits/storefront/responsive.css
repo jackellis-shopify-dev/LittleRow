@@ -1,0 +1,112 @@
+/* Storefront kit — responsive layer.
+   The kit's screens are styled with inline styles (so they paint immediately), which means
+   the desktop grid values sit on the elements themselves. Media queries therefore need
+   !important to win. Every rule here is keyed to an `lr-*` class in the view files.
+   Breakpoints: 1024 (narrow desktop/tablet), 760 (tablet), 560 (phone). */
+
+/* Tighten the very top of the type scale on small screens so display type stops overflowing */
+@media (max-width:560px){
+  :root{
+    --font-size--6xl:2.75rem;--font-size--5xl:2.25rem;--font-size--4xl:1.875rem;
+    --font-size--3xl:1.5rem;--font-size--2xl:1.375rem;--font-size--xl:1.25rem;
+    --section-padding-block-large:56px;
+  }
+}
+
+/* ---------- Header ---------- */
+.lr-burger,.lr-drawer-shell{display:none}
+/* Below ~1150px the six-item menu no longer fits either side of a centred wordmark, so the
+   header switches to the theme's logo-left row (logo_position/menu_position: left). */
+@media (max-width:1150px){
+  .lr-headbar{grid-template-columns:auto 1fr auto!important;gap:var(--gap-lg)!important}
+  .lr-headbar .lr-logo{order:1;justify-self:start}
+  .lr-nav-desktop{order:2;gap:var(--gap-md)!important;min-width:0}
+  .lr-headicons{order:3}
+}
+@media (max-width:760px){
+  .lr-headbar{grid-template-columns:1fr auto 1fr!important;gap:var(--gap-sm)!important;padding-left:16px!important;padding-right:16px!important}
+  .lr-nav-desktop{display:none!important}
+  .lr-burger{display:grid!important}
+  .lr-headicons{gap:var(--gap-md)!important}
+  .lr-headicons .lr-account{display:none!important}
+  .lr-drawer-shell{display:block}
+}
+
+/* ---------- Home ---------- */
+@media (max-width:900px){
+  .lr-hero{grid-template-columns:1fr!important;min-height:0!important}
+  .lr-hero-copy{padding:48px 24px!important}
+  .lr-hero-media{min-height:58vw!important}
+  .lr-story{grid-template-columns:1fr!important;gap:var(--gap-xl)!important;padding-top:56px!important;padding-bottom:56px!important}
+}
+@media (max-width:760px){
+  .lr-ages{grid-template-columns:1fr!important}
+  .lr-ages>a{min-height:0!important;padding:28px 24px!important}
+  .lr-grid-4{grid-template-columns:repeat(2,1fr)!important}
+  .lr-section{padding:48px 16px!important}
+}
+
+/* ---------- Collection ---------- */
+@media (max-width:1024px){
+  .lr-grid-3{grid-template-columns:repeat(2,1fr)!important}
+}
+@media (max-width:900px){
+  .lr-collection{grid-template-columns:1fr!important;gap:var(--gap-lg)!important}
+  /* filters become a disclosure panel above the grid rather than a sticky rail */
+  .lr-facets{position:static!important;top:auto!important;border-bottom:1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10));padding-bottom:12px}
+  .lr-facets[data-open="false"] .lr-facet-list{display:none}
+  .lr-facets-toggle{display:inline-flex!important}
+  .lr-facets-label{display:none!important}
+}
+.lr-facets-toggle{display:none}
+@media (max-width:560px){
+  .lr-collection-head{padding:32px 20px!important}
+  .lr-collection-main{padding:24px 16px 0!important}
+  .lr-sort{max-width:none!important;width:100%}
+  .lr-toolbar{flex-direction:column!important;align-items:stretch!important;gap:var(--gap-sm)!important}
+}
+
+/* ---------- Product ---------- */
+@media (max-width:900px){
+  .lr-pdp{grid-template-columns:1fr!important;gap:var(--gap-xl)!important}
+  .lr-pdp-info{position:static!important;top:auto!important}
+  /* Gallery becomes a swipeable, snapping filmstrip instead of stacking */
+  .lr-pdp-media{display:flex!important;grid-template-columns:none!important;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-inline:-16px;padding-inline:16px;scroll-padding-inline:16px}
+  .lr-pdp-media::-webkit-scrollbar{display:none}
+  .lr-pdp-media>*{grid-column:auto!important;flex:0 0 86%;scroll-snap-align:center}
+}
+@media (max-width:560px){
+  .lr-pdp-wrap{padding:20px 16px 0!important}
+  .lr-grid-4{grid-template-columns:repeat(2,1fr)!important}
+  .lr-sizeguide{font-size:var(--font-size--3xs)!important}
+  .lr-atc{flex-wrap:wrap!important}
+}
+
+/* ---------- Search overlay ---------- */
+@media (max-width:900px){
+  .lr-search{grid-template-columns:1fr!important;gap:var(--gap-lg)!important;margin-top:20px!important}
+  .lr-search-suggestions{flex-direction:row!important;flex-wrap:wrap!important;gap:var(--gap-md)!important}
+}
+@media (max-width:560px){
+  .lr-search-pad{padding:16px 16px 24px!important}
+  .lr-grid-3{grid-template-columns:repeat(2,1fr)!important}
+}
+
+/* ---------- Footer ---------- */
+/* Column headings and the sign-up field label pick up the same tone as the base row. */
+.lr-footer .lr-label,.lr-footer label>span{color:var(--text-subdued)!important}
+@media (max-width:900px){
+  /* Footer columns become accordions (see FooterColumn in chrome.view.js), so they stack
+     full width in one list rather than sitting side by side. */
+  .lr-footer{grid-template-columns:1fr!important;gap:0!important;padding:40px 24px 16px!important}
+  .lr-footer>div:first-child{margin-bottom:var(--gap-xl);max-width:none!important}
+  .lr-footer-signup{flex-direction:column!important;align-items:stretch!important}
+  .lr-footer-signup>*{max-width:none!important;width:100%!important}
+}
+@media (max-width:560px){
+  .lr-footer{grid-template-columns:1fr!important;padding:40px 16px 24px!important}
+  .lr-footer-signup{flex-direction:column!important;align-items:stretch!important}
+  .lr-footer-signup>*{max-width:none!important}
+  .lr-footer-base{padding:0 16px 32px!important}
+  .lr-footer-base-row{flex-direction:row!important;justify-content:space-between!important;gap:var(--gap-sm)!important}
+}

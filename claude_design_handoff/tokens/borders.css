@@ -1,0 +1,34 @@
+:root{
+  /* Radii — exact Horizon theme settings from config/settings_data.json */
+  --style-border-radius-buttons-primary:14px;
+  --style-border-radius-buttons-secondary:14px;
+  --style-border-radius-inputs:4px;
+  --style-border-radius-popover:14px;
+  --style-border-radius-card:4px;
+  --style-border-radius-product-media:0px;
+  --style-border-radius-badge:100px;
+  --style-border-radius-swatch:32px;
+  --style-border-radius-variant-button:14px;
+  --style-border-radius-50:50%;
+  --style-border-radius-xs:0.2rem;
+  --style-border-radius-sm:0.6rem;
+  --style-border-radius-md:0.8rem;
+  --style-border-radius-lg:1rem;
+
+  /* Widths */
+  --style-border-width:1px;
+  --style-border-width-primary:0px;
+  --style-border-width-secondary:1px;
+  --style-border-width-inputs:1px;
+  --border-width-sm:1px;
+  --variant-picker-button-border-width:1px;
+
+  /* Shadow — Horizon ships exactly one button shadow and one image overlay gradient */
+  --shadow-button:0 2px 3px rgb(0 0 0 / 20%);
+  --gradient-image-overlay:linear-gradient(to top,rgb(0 0 0 / 0.5),transparent); /* @kind other */
+  --shadow-popover:0 8px 24px rgb(var(--lr-off-black-rgb) / 0.08);
+
+  /* Focus */
+  --focus-outline-width:0.09375rem;
+  --focus-outline-offset:0.2em;
+}

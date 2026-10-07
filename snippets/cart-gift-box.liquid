@@ -1,0 +1,70 @@
+{%- doc -%}
+  Little Row: the "add a gift box" option in the cart summary (drawer and cart page).
+
+  The gift box is a real product (Theme settings > Cart > Gift box product) added as a cart line,
+  one per order, at the product's price. Its row is hidden in the cart list (see cart-products), so
+  this tick box is how it is added, shown and removed. Renders nothing when no product is set, the
+  product is unavailable or the cart is empty.
+
+  @example
+  {% render 'cart-gift-box' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign gift_box_variant = settings.gift_box_product.selected_or_first_available_variant
+  assign gift_box_line = null
+  for item in cart.items
+    if item.product_id == settings.gift_box_product.id
+      assign gift_box_line = item
+      break
+    endif
+  endfor
+-%}
+
+{%- if gift_box_variant.available and cart != empty -%}
+  <script
+    type="module"
+    src="{{ 'cart-gift-box.js' | asset_url }}"
+  ></script>
+
+  <cart-gift-box
+    class="cart-gift-box cart-primary-typography"
+    data-variant-id="{{ gift_box_variant.id }}"
+    data-line-key="{{ gift_box_line.key }}"
+    {% if gift_box_line and cart.items.size == 1 %}
+      data-only-item
+    {% endif %}
+  >
+    {%- liquid
+      assign gift_box_checked = false
+      if gift_box_line
+        assign gift_box_checked = true
+      endif
+      assign gift_box_label = 'content.gift_box_label' | t
+      render 'checkbox', id: 'cart-gift-box', name: 'gift_box', value: gift_box_variant.id, label: gift_box_label, checked: gift_box_checked, disabled: false, events: 'on:change="/toggle"', inputRef: 'checkbox'
+    -%}
+    {%- assign gift_box_price = gift_box_variant.price | money -%}
+    <span class="cart-gift-box__price cart-secondary-typography">
+      {{- 'content.gift_box_price' | t: price: gift_box_price -}}
+    </span>
+  </cart-gift-box>
+{%- endif -%}
+
+{% stylesheet %}
+  .cart-gift-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-sm);
+    min-height: var(--minimum-touch-target);
+    padding-block: var(--padding-xs);
+    font-size: var(--font-size--sm);
+    font-weight: 500;
+  }
+
+  .cart-gift-box__price {
+    flex-shrink: 0;
+    font-weight: 400;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+  }
+{% endstylesheet %}

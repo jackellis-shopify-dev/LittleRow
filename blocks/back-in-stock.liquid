@@ -1,0 +1,355 @@
+{%- doc -%}
+  Back in stock ("notify me") for the product page, submitting to the Amp app's JavaScript API
+  (`BIS.create(email, variantId, productId)`), which the app's embed loads on the storefront.
+
+  Renders only the modal. It is opened by the add-to-cart button while it reads "notify me"
+  (util-notify-me, product-form.js), which calls `open(variantId)` on this block in the same
+  section. The modal lists the sold-out sizes with that one preselected, and prefills the email
+  for logged-in customers. Without this block, the button opens the Amp app's own popup instead.
+{%- enddoc -%}
+
+{%- liquid
+  assign block_settings = block.settings
+  assign product = closest.product
+  assign variant = product.selected_or_first_available_variant
+
+  assign sold_out_variants = product.variants | where: 'available', false
+
+  assign option_label = product.options_with_values.last.name
+  if option_label == blank
+    assign option_label = 'content.back_in_stock_size_label' | t
+  endif
+-%}
+
+{%- if product != blank and sold_out_variants.size > 0 -%}
+  {%- liquid
+    assign dialog_id = 'BackInStockDialog-' | append: block.id
+    assign product_title = product.title
+  -%}
+
+  <script
+    src="{{ 'dialog.js' | asset_url }}"
+    type="module"
+  ></script>
+  <script
+    src="{{ 'back-in-stock.js' | asset_url }}"
+    type="module"
+  ></script>
+
+  {% render 'dialog-styles' %}
+
+  <back-in-stock-component
+    class="back-in-stock spacing-style"
+    style="{% render 'spacing-style', settings: block_settings %}"
+    data-product-id="{{ product.id }}"
+    data-variant-id="{{ variant.id }}"
+    data-product-title="{{ product_title | escape }}"
+    data-success-template="{{ 'content.back_in_stock_success_body' | t: email: '[email]', product: product_title, size: '[size]' | escape }}"
+    data-error-generic="{{ 'content.back_in_stock_error' | t | escape }}"
+    data-error-unavailable="{{ 'content.back_in_stock_unavailable' | t | escape }}"
+    {{ block.shopify_attributes }}
+  >
+
+    <dialog-component id="{{ dialog_id }}">
+      <dialog
+        ref="dialog"
+        class="back-in-stock-dialog dialog-modal"
+        scroll-lock
+        aria-labelledby="{{ dialog_id }}-heading"
+      >
+        <div class="back-in-stock-dialog__header">
+          <div>
+            <h2
+              id="{{ dialog_id }}-heading"
+              class="back-in-stock-dialog__heading h4"
+              data-back-in-stock-heading
+              data-heading-default="{{ 'content.back_in_stock_heading' | t | escape }}"
+              data-heading-success="{{ 'content.back_in_stock_success_heading' | t | escape }}"
+            >
+              {{ 'content.back_in_stock_heading' | t }}
+            </h2>
+          </div>
+          <button
+            type="button"
+            class="button button-unstyled back-in-stock-dialog__close"
+            aria-label="{{ 'accessibility.close_dialog' | t }}"
+            on:click="dialog-component/closeDialog"
+          >
+            <span class="svg-wrapper">
+              {{- 'icon-close.svg' | inline_asset_content -}}
+            </span>
+          </button>
+        </div>
+
+        <div data-back-in-stock-form>
+          <p class="back-in-stock-dialog__intro">
+            {{ 'content.back_in_stock_intro' | t: product: product_title }}
+          </p>
+
+          {%- unless product.has_only_default_variant -%}
+            <div class="back-in-stock-dialog__field">
+              <label for="{{ dialog_id }}-variant">{{ option_label | escape }}</label>
+              <div class="back-in-stock-dialog__select-wrapper">
+                <select
+                  id="{{ dialog_id }}-variant"
+                  class="back-in-stock-dialog__input back-in-stock-dialog__select"
+                  data-back-in-stock-variant
+                >
+                  {%- for sold_out_variant in sold_out_variants -%}
+                    <option
+                      value="{{ sold_out_variant.id }}"
+                      {% if sold_out_variant.id == variant.id %}
+                        selected
+                      {% endif %}
+                    >
+                      {{- sold_out_variant.title | escape -}}
+                    </option>
+                  {%- endfor -%}
+                </select>
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  class="icon icon-caret"
+                  viewBox="0 0 10 6"
+                >
+                  {%- render 'icon', icon: 'caret' -%}
+                </svg>
+              </div>
+            </div>
+          {%- endunless -%}
+
+          <div class="back-in-stock-dialog__field">
+            <label for="{{ dialog_id }}-email">{{ 'content.back_in_stock_email_label' | t }}</label>
+            <input
+              id="{{ dialog_id }}-email"
+              class="back-in-stock-dialog__input"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              required
+              placeholder="{{ 'content.back_in_stock_email_placeholder' | t }}"
+              value="{{ customer.email }}"
+              data-back-in-stock-email
+              on:keydown="back-in-stock-component/handleKeyDown"
+            >
+          </div>
+
+          <p
+            class="back-in-stock-dialog__error"
+            role="alert"
+            data-back-in-stock-error
+            hidden
+          ></p>
+
+          <button
+            type="button"
+            class="button back-in-stock-dialog__submit"
+            data-back-in-stock-submit
+            on:click="back-in-stock-component/submit"
+          >
+            {{ 'content.back_in_stock_submit' | t }}
+          </button>
+        </div>
+
+        <div
+          data-back-in-stock-success
+          hidden
+        >
+          <p
+            class="back-in-stock-dialog__intro"
+            data-back-in-stock-success-text
+          ></p>
+          <button
+            type="button"
+            class="button back-in-stock-dialog__submit"
+            on:click="dialog-component/closeDialog"
+          >
+            {{ 'content.back_in_stock_done' | t }}
+          </button>
+        </div>
+      </dialog>
+    </dialog-component>
+  </back-in-stock-component>
+{%- endif -%}
+
+{% stylesheet %}
+  /* Only the modal renders (in the top layer when open), so the block is taken out of the
+     product details flow and leaves no empty row or gap */
+  back-in-stock-component {
+    position: absolute;
+  }
+
+  back-in-stock-component dialog.back-in-stock-dialog {
+    --back-in-stock-dialog-gap-top: max(var(--page-margin, 16px), var(--safe-area-inset-top, 0px));
+    --back-in-stock-dialog-gap-bottom: max(var(--page-margin, 16px), var(--safe-area-inset-bottom, 0px));
+
+    /* stylelint-disable declaration-no-important */
+    /* !important beats Horizon's full-screen `.dialog-modal` rule below 750px */
+    width: min(480px, calc(100vw - 2 * var(--page-margin, 16px))) !important;
+    max-width: none !important;
+    height: fit-content !important;
+    max-height: calc(
+      100dvh - var(--back-in-stock-dialog-gap-top) - var(--back-in-stock-dialog-gap-bottom)
+    ) !important;
+    margin: auto !important;
+    /* stylelint-enable declaration-no-important */
+    padding: var(--padding-3xl);
+    border: 0;
+    border-radius: var(--style-border-radius-popover);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  @media screen and (max-width: 749px) {
+    back-in-stock-component dialog.back-in-stock-dialog {
+      padding: var(--padding-2xl);
+    }
+  }
+
+  back-in-stock-component dialog.back-in-stock-dialog[open] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-lg);
+    overflow-y: auto;
+  }
+
+  .back-in-stock-dialog__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--gap-lg);
+  }
+
+  .back-in-stock-dialog__heading {
+    margin: var(--margin-xs) 0 0;
+  }
+
+  .back-in-stock-dialog__close {
+    display: grid;
+    place-items: center;
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    margin: calc(var(--padding-sm) * -1);
+    color: var(--color-foreground);
+
+    .svg-wrapper,
+    svg {
+      width: var(--icon-size-xs);
+      height: var(--icon-size-xs);
+    }
+  }
+
+  [data-back-in-stock-form],
+  [data-back-in-stock-success] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-lg);
+  }
+
+  /* .button-unstyled and .button set a display, which beats the browser's [hidden] */
+  [data-back-in-stock-form][hidden],
+  [data-back-in-stock-success][hidden],
+  .back-in-stock-dialog__error[hidden] {
+    display: none;
+  }
+
+  .back-in-stock-dialog__intro {
+    margin: 0;
+    font-size: var(--font-size--sm);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+  }
+
+  .back-in-stock-dialog__select-wrapper {
+    position: relative;
+
+    .icon {
+      position: absolute;
+      inset-inline-end: var(--padding-md);
+      top: 50%;
+      width: var(--icon-size-2xs);
+      height: var(--icon-size-2xs);
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+  }
+
+  .back-in-stock-dialog__select {
+    padding-inline-end: calc(var(--padding-md) * 2 + var(--icon-size-2xs));
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .back-in-stock-dialog__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-xs);
+  }
+
+  .back-in-stock-dialog__input {
+    width: 100%;
+    padding: var(--input-padding);
+    font: inherit;
+    color: var(--color-input-text);
+    background-color: var(--color-input-background);
+    border: var(--style-border-width-inputs) solid var(--color-input-border);
+    border-radius: var(--style-border-radius-inputs);
+
+    &:focus-visible {
+      outline: var(--focus-outline-width) solid var(--color-foreground);
+      outline-offset: var(--focus-outline-offset);
+    }
+  }
+
+  .back-in-stock-dialog__error {
+    margin: 0;
+    font-size: var(--font-size--sm);
+    color: var(--color-error);
+  }
+
+  .back-in-stock-dialog__submit {
+    width: 100%;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.back_in_stock",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.back_in_stock_info"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.back_in_stock",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

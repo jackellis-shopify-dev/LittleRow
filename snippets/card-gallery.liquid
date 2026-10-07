@@ -204,24 +204,30 @@
       {%- endif -%}
     </a>
   {% elsif product != blank and product.media.size == 0 %}
-    <div class="product-card-gallery__title-placeholder">
-      <a
-        class="contents"
-        ref="cardGalleryLink"
-        href="{{ product.url }}"
-      >
-        <span class="title-text">{{- product.title -}}</span>
-      </a>
-    </div>
+    {%- liquid
+      # Little Row: no photography yet, so show the tinted monogram placeholder. With
+      # "adapt" there is no image ratio to adapt to, so use the card's portrait default.
+      assign placeholder_ratio = ratio
+      if block_settings.image_ratio == 'adapt'
+        assign placeholder_ratio = '3 / 4'
+      endif
+    -%}
+    <a
+      class="product-card-gallery__placeholder-link"
+      ref="cardGalleryLink"
+      href="{{ product.url }}"
+      tabindex="-1"
+    >
+      {% render 'product-placeholder', product: product, aspect_ratio: placeholder_ratio %}
+      <span class="visually-hidden">{{ product.title }}</span>
+    </a>
   {% elsif product == blank %}
     {% liquid
       capture placeholder_image
         # Extract index from block ID (e.g., "product-card-3" -> "3")
         assign block_parts = block.id | split: '-'
-        assign placeholder_index = block_parts.last | default: 0
-        assign variant = placeholder_index | modulo: 3 | plus: 1
-        assign placeholder_name = 'product-apparel-' | append: variant
-        echo placeholder_name | placeholder_svg_tag
+        assign placeholder_index = block_parts.last | default: 0 | plus: 0
+        render 'product-placeholder', index: placeholder_index, aspect_ratio: '3 / 4'
       endcapture
       capture placeholder_slide
         render 'slideshow-slide', index: 1, children: placeholder_image, class: 'product-media-container card-gallery__placeholder'
@@ -252,6 +258,10 @@
   .card-gallery__placeholder svg {
     height: 100%;
     width: 100%;
+  }
+
+  .product-card-gallery__placeholder-link {
+    display: block;
   }
 
   .card-gallery svg {

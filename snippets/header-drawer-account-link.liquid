@@ -1,0 +1,15 @@
+{%- doc -%}
+  Renders the account link at the foot of the menu drawer, when customer accounts are enabled.
+
+  @example
+  {% render 'header-drawer-account-link' %}
+{%- enddoc -%}
+
+{%- if shop.customer_accounts_enabled -%}
+  <a
+    href="{{ routes.account_url }}"
+    class="menu-drawer__account-link"
+  >
+    {{- 'content.account_title' | t -}}
+  </a>
+{%- endif -%}

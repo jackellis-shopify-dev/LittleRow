@@ -43,7 +43,7 @@
       {% if hotspot_product.featured_image != blank %}
         {% render 'image', image: hotspot_product.featured_image, class: 'hotspot-dialog__product-image' %}
       {% else %}
-        {{ 'product-apparel-1' | placeholder_svg_tag: 'hotspot-dialog__placeholder-product-image' }}
+        {% render 'brand-placeholder', class: 'hotspot-dialog__placeholder-product-image', index: hotspot_product.id, width: 525, height: 525 %}
       {% endif %}
       <div class="hotspot-dialog__product-content">
         <div class="hotspot-dialog__product-info">

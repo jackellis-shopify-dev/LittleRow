@@ -630,6 +630,22 @@
     z-index: var(--layer-menu-drawer);
   }
 
+  /* Between tablet and 1150px, six top-level items no longer fit either side of a centred
+     logo, so a centred logo moves to the start of the row: logo, menu, actions. */
+  @media screen and (min-width: 750px) and (max-width: 1150px) {
+    #header-component[data-menu-style='menu']
+      .header__columns:has(.header__column--center .header-logo):has(.header__column--left header-menu) {
+      --header-template-columns: auto minmax(0, 1fr) auto;
+
+      grid-template-areas: 'center left right';
+      grid-gap: var(--gap-lg);
+
+      .header__column--center {
+        justify-content: flex-start;
+      }
+    }
+  }
+
   /* need default values for non-flash transitions on first overflow menu open */
   #header-component {
     --submenu-height: 0px;

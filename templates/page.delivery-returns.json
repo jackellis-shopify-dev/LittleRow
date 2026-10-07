@@ -1,0 +1,202 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "blocks": {
+        "heading": {
+          "type": "text",
+          "settings": {
+            "text": "<h1>{{ closest.page.title }}</h1>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "left",
+            "type_preset": "h1"
+          },
+          "blocks": {},
+          "name": "t:names.title"
+        },
+        "page-content": {
+          "type": "page-content",
+          "settings": {},
+          "blocks": {}
+        },
+        "delivery_accordion": {
+          "type": "accordion",
+          "settings": {
+            "icon": "plus",
+            "dividers": true,
+            "type_preset": "paragraph"
+          },
+          "blocks": {
+            "delivery_row_1": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "how much is delivery?",
+                "open_by_default": false,
+                "icon": "none"
+              },
+              "blocks": {
+                "delivery_text_1": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>free uk delivery on orders over \u00a360. otherwise it is \u00a33.95.</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "delivery_text_1"
+              ]
+            },
+            "delivery_row_2": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "how long will it take?",
+                "open_by_default": false,
+                "icon": "none"
+              },
+              "blocks": {
+                "delivery_text_2": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>we pack orders within 1-2 working days, then uk delivery takes 2-3 working days. personalised pieces take 2 days longer.</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "delivery_text_2"
+              ]
+            },
+            "delivery_row_3": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "do you deliver outside the uk?",
+                "open_by_default": false,
+                "icon": "none"
+              },
+              "blocks": {
+                "delivery_text_3": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>not yet, but we are working on it.</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "delivery_text_3"
+              ]
+            },
+            "delivery_row_4": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "can i return something?",
+                "open_by_default": false,
+                "icon": "none"
+              },
+              "blocks": {
+                "delivery_text_4": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>yes. you have 60 days to change your mind, and returns are free. pieces need to be unworn, with their labels on. personalised pieces can only be returned if they are faulty.</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "delivery_text_4"
+              ]
+            },
+            "delivery_row_5": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "how do i start a return?",
+                "open_by_default": false,
+                "icon": "none"
+              },
+              "blocks": {
+                "delivery_text_5": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p><a href=\"/pages/contact\">get in touch</a> with your order number and what you would like to return, and we will send you a free returns label.</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "delivery_text_5"
+              ]
+            },
+            "delivery_row_6": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "when will i get my refund?",
+                "open_by_default": false,
+                "icon": "none"
+              },
+              "blocks": {
+                "delivery_text_6": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>we refund to your original payment method within 5 working days of your return reaching us.</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "delivery_text_6"
+              ]
+            }
+          },
+          "block_order": [
+            "delivery_row_1",
+            "delivery_row_2",
+            "delivery_row_3",
+            "delivery_row_4",
+            "delivery_row_5",
+            "delivery_row_6"
+          ]
+        }
+      },
+      "block_order": [
+        "heading",
+        "page-content",
+        "delivery_accordion"
+      ],
+      "settings": {
+        "content_direction": "column",
+        "gap": 32,
+        "padding-block-start": 40,
+        "padding-block-end": 80
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

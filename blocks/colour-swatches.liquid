@@ -1,0 +1,188 @@
+{%- doc -%}
+  Colourway swatches for products sold as one product per colour.
+
+  Linked colourways come from the `custom.linked_products` product metafield (list of product
+  references). Each colourway lists the whole group, itself included; if the current product is
+  missing from its own list it is still shown first. With no linked products the block shows the
+  current colour on its own, optionally noting "one colourway".
+
+  Swatches are ordinary links, so switching colour works without JavaScript.
+{%- enddoc -%}
+
+{%- liquid
+  assign block_settings = block.settings
+  assign product = closest.product
+  if request.visual_preview_mode and product == blank
+    assign product = collections.all.products.first
+  endif
+
+  assign linked_products = product.metafields.custom.linked_products.value
+  assign linked_ids = linked_products | map: 'id'
+
+  assign title_parts = product.title | split: ' - '
+  assign current_colour = ''
+  if title_parts.size > 1
+    assign current_colour = title_parts.last | strip | downcase
+  endif
+
+  assign is_single = true
+  if linked_products.size > 1
+    assign is_single = false
+  endif
+-%}
+
+{%- if product != blank and current_colour != blank -%}
+  {%- unless is_single and block_settings.show_single_colourway == false -%}
+    <div
+      class="colour-swatches spacing-style"
+      style="{% render 'spacing-style', settings: block_settings %} --swatch-size: {{ block_settings.swatch_size }}px;"
+      {{ block.shopify_attributes }}
+    >
+      <p
+        class="colour-swatches__label"
+        id="ColourSwatchesLabel-{{ block.id }}"
+      >
+        {{- 'content.colour_swatches_label' | t: colour: current_colour -}}
+        {%- if is_single %} ({{ 'content.colour_swatches_single' | t }}){% endif -%}
+      </p>
+      <ul
+        class="colour-swatches__list list-unstyled"
+        role="list"
+        aria-labelledby="ColourSwatchesLabel-{{ block.id }}"
+      >
+        {%- unless linked_ids contains product.id -%}
+          {%- render 'colour-swatch', product: product, current: true -%}
+        {%- endunless -%}
+        {%- for colourway in linked_products -%}
+          {%- if colourway != blank -%}
+            {%- liquid
+              assign is_current = false
+              if colourway.id == product.id
+                assign is_current = true
+              endif
+            -%}
+            {%- render 'colour-swatch', product: colourway, current: is_current -%}
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endunless -%}
+{%- endif -%}
+
+{% stylesheet %}
+  .colour-swatches {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-sm);
+  }
+
+  /* Matches the variant picker's option label (Horizon's legend text style) */
+  .colour-swatches__label {
+    margin: 0;
+    color: var(--variant-option-label-color, var(--color-foreground));
+  }
+
+  .colour-swatches__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-sm);
+  }
+
+  .colour-swatches__swatch {
+    display: block;
+    width: var(--swatch-size, 52px);
+    height: var(--swatch-size, 52px);
+    border-radius: 50%;
+    background-color: var(--swatch-colour, transparent);
+    box-shadow: inset 0 0 0 1px rgb(var(--color-foreground-rgb) / var(--opacity-15));
+    transition: box-shadow var(--animation-speed) var(--animation-easing);
+
+    &:hover {
+      box-shadow: inset 0 0 0 1px rgb(var(--color-foreground-rgb) / var(--opacity-40));
+    }
+
+    &:focus-visible {
+      outline: var(--focus-outline-width) solid var(--color-foreground);
+      outline-offset: var(--focus-outline-offset);
+    }
+  }
+
+  /* The colour being viewed: a ring separated from the swatch by a gap in the page colour */
+  .colour-swatches__swatch--current {
+    box-shadow: inset 0 0 0 1px rgb(var(--color-foreground-rgb) / var(--opacity-15)),
+      0 0 0 3px var(--color-background), 0 0 0 4.5px var(--color-foreground);
+
+    &:hover {
+      box-shadow: inset 0 0 0 1px rgb(var(--color-foreground-rgb) / var(--opacity-15)),
+        0 0 0 3px var(--color-background), 0 0 0 4.5px var(--color-foreground);
+    }
+  }
+
+  .colour-swatches__swatch--unmapped {
+    background-image: linear-gradient(
+      135deg,
+      transparent calc(50% - 0.5px),
+      rgb(var(--color-foreground-rgb) / var(--opacity-15)) 50%,
+      transparent calc(50% + 0.5px)
+    );
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.colour_swatches",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.colour_swatches_info"
+    },
+    {
+      "type": "range",
+      "id": "swatch_size",
+      "label": "t:settings.swatch_size",
+      "min": 24,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 52
+    },
+    {
+      "type": "checkbox",
+      "id": "show_single_colourway",
+      "label": "t:settings.show_single_colourway",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.colour_swatches",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

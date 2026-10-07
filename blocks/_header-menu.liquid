@@ -93,6 +93,12 @@
 
     {% capture children %}
       {% for link in block_settings.menu.links %}
+        {%- comment -%}
+          Top-level links without children (e.g. "our story") can be kept to the drawer only.
+        {%- endcomment -%}
+        {%- if block_settings.hide_childless_links_desktop and link.links == blank -%}
+          {%- continue -%}
+        {%- endif -%}
         <li
           class="menu-list__list-item"
           on:blur="/deactivate"
@@ -159,7 +165,8 @@
                       grid_columns_count_collection_images: 8,
                       menu_content_type: menu_content_type,
                       content_aspect_ratio: ratio,
-                      image_border_radius: image_border_radius
+                      image_border_radius: image_border_radius,
+                      max_featured_products_count: block_settings.featured_products_count
                     %}
                   </div>
                 </div>
@@ -813,6 +820,46 @@
   .menu-list__list-item:not(:has([aria-expanded='true'])) > .menu-list__submenu product-component {
     display: none;
   }
+
+  /* Little Row submenu panel: child links on the left, featured product tiles on the right */
+  .menu-list__submenu {
+    --submenu-padding-block-start: var(--padding-2xl);
+    --submenu-padding-block-end: var(--padding-4xl);
+  }
+
+  /* Child link size and colour come from the block's "Submenu size" setting (small = design) */
+  .menu-list__submenu .mega-menu__grid {
+    --menu-horizontal-gap: var(--gap-3xl);
+  }
+
+  .menu-list__submenu .mega-menu__link {
+    padding-block: 5px;
+  }
+
+  .mega-menu__link-suffix {
+    color: var(--text-muted);
+  }
+
+  .menu-list__submenu .mega-menu__content-list--products {
+    grid-template-columns: repeat(var(--menu-content-columns-desktop), 140px);
+    gap: var(--gap-lg);
+
+    @media screen and (max-width: 989px) {
+      grid-template-columns: repeat(var(--menu-content-columns-tablet), 140px);
+    }
+
+    .resource-card {
+      row-gap: var(--gap-xs);
+    }
+
+    .resource-card__title {
+      font-size: var(--font-size--2xs);
+    }
+
+    [ref='priceContainer'] {
+      display: none;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -989,6 +1036,16 @@
       "visible_if": "{{ block.settings.menu_style == 'featured_products' }}"
     },
     {
+      "type": "range",
+      "id": "featured_products_count",
+      "label": "t:settings.featured_products_count",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 3,
+      "visible_if": "{{ block.settings.menu_style == 'featured_products' }}"
+    },
+    {
       "type": "select",
       "id": "featured_collections_aspect_ratio",
       "label": "t:settings.image_ratio",
@@ -1021,6 +1078,12 @@
       "visible_if": "{{ block.settings.menu_style != 'text' }}"
     },
     {
+      "type": "checkbox",
+      "id": "hide_childless_links_desktop",
+      "label": "t:settings.hide_childless_links_desktop",
+      "default": false
+    },
+    {
       "type": "header",
       "content": "t:content.mobile_layout"
     },
@@ -1044,6 +1107,30 @@
       "visible_if": "{{ block.settings.navigation_bar }}"
     },
     {
+      "type": "select",
+      "id": "drawer_font",
+      "label": "t:settings.drawer_font",
+      "options": [
+        {
+          "value": "body",
+          "label": "t:options.body"
+        },
+        {
+          "value": "subheading",
+          "label": "t:options.subheading"
+        },
+        {
+          "value": "heading",
+          "label": "t:options.heading"
+        },
+        {
+          "value": "accent",
+          "label": "t:options.accent"
+        }
+      ],
+      "default": "heading"
+    },
+    {
       "type": "checkbox",
       "id": "drawer_accordion",
       "label": "t:settings.accordion",
@@ -1061,6 +1148,13 @@
       "id": "drawer_dividers",
       "label": "t:settings.dividers",
       "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "drawer_featured_content",
+      "label": "t:settings.drawer_featured_content",
+      "default": true,
+      "visible_if": "{{ block.settings.menu_style == 'featured_products' or block.settings.menu_style == 'featured_collections' }}"
     }
   ]
 }

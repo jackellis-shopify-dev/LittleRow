@@ -9,26 +9,76 @@
 ></div>
 <div class="section section--page-width{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}">
   <div
-    class="spacing-style search-page__header"
+    class="spacing-style"
     style="
       --horizontal-alignment: {{ section.settings.alignment }};
       {% render 'spacing-style', settings: section.settings %}
     "
   >
-    {% assign heading_text = 'content.search' | t %}
+    <div
+      class="search-page__header"
+      {% if section.settings.panel_color != blank %}
+        style="--search-panel-background: {{ section.settings.panel_color }};"
+      {% endif %}
+    >
+      {%- comment -%}
+        With a query, the heading is the quoted term and a line says how many pieces matched. The
+        search field only shows when there's nothing to refine (no query, or no results); the
+        header search overlay covers refining an existing search.
+      {%- endcomment -%}
+      {% capture heading_text %}
+        {%- if search.performed -%}
+          <h1>“{{ search.terms | escape }}”</h1>
+        {%- else -%}
+          <h1>{{ 'content.search' | t }}</h1>
+        {%- endif -%}
+      {% endcapture %}
 
-    {% if search.performed %}
-      {% assign heading_text = 'content.search_results' | t %}
-    {% endif %}
+      {% content_for 'block', id: 'heading', type: '_heading', text: heading_text %}
 
-    {% capture heading_text %}
-      <h3>{{ heading_text }}</h3>
-    {% endcapture %}
+      {% if search.performed %}
+        <p class="search-page__summary">
+          {{ 'content.search_results_pieces' | t: count: search.results_count }}
+        </p>
+      {% endif %}
 
-    {% content_for 'block', id: 'heading', type: '_heading', text: heading_text %}
-    {% content_for 'block', id: 'search', type: '_search-input' %}
+      {% if search.performed == false or search.results_count == 0 %}
+        {% content_for 'block', id: 'search', type: '_search-input' %}
+      {% endif %}
+    </div>
   </div>
 </div>
+
+{% stylesheet %}
+  /* Little Row: the search header is a panel inset within the page width ("Panel background" setting) */
+  .search-page__header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: var(--padding-5xl) 40px;
+    background-color: var(--search-panel-background, transparent);
+
+    @media screen and (max-width: 749px) {
+      padding: var(--padding-4xl) var(--padding-xl);
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 16em;
+    }
+
+    search-page-input-component {
+      margin-block: var(--margin-xs) 0;
+    }
+  }
+
+  .search-page__summary {
+    margin: 0;
+    max-width: 34em;
+    font-size: var(--font-size--md);
+    line-height: var(--line-height--body-loose);
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
@@ -59,6 +109,12 @@
       "id": "background_color",
       "label": "t:settings.background_color",
       "placeholder": "t:settings.default"
+    },
+    {
+      "type": "color",
+      "id": "panel_color",
+      "label": "t:settings.panel_background",
+      "default": "{{ settings.color_palette.color2 }}"
     },
     {
       "type": "header",

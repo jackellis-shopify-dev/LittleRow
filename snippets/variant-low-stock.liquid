@@ -1,0 +1,31 @@
+{%- doc -%}
+  Low-stock note for the selected variant, e.g. "only 2 left in 2-3y". Rendered inside the variant
+  picker, which re-renders on every selection, so the note follows the chosen size.
+
+  Shows only when the variant's inventory is tracked by Shopify and between 1 and `threshold`.
+
+  @param {object} product - The product whose selected (or first available) variant is checked.
+  @param {object} product_option - The option whose selected value names the variant (e.g. Size).
+  @param {number} threshold - Show the note at or below this quantity.
+
+  @example
+  {% render 'variant-low-stock', product: product_resource, product_option: product_option, threshold: 3 %}
+{%- enddoc -%}
+
+{%- liquid
+  assign variant = product.selected_or_first_available_variant
+  assign quantity = variant.inventory_quantity | default: 0
+-%}
+
+{%- if variant.inventory_management == 'shopify' and quantity > 0 and quantity <= threshold -%}
+  <span
+    class="variant-low-stock"
+    role="status"
+  >
+    <span
+      class="variant-low-stock__dot"
+      aria-hidden="true"
+    ></span>
+    {{- 'content.variant_low_stock' | t: count: quantity, value: product_option.selected_value -}}
+  </span>
+{%- endif -%}

@@ -42,11 +42,10 @@
     assign render_order = 'product-details,media'
   endif
 
-  # Check if product has media
+  # Little Row: always render the media column. A product without media shows the labelled
+  # brand placeholders from product-media-gallery-content.liquid, so the layout doesn't collapse
+  # to details-only. (Horizon set this to false when product.media.size == 0.)
   assign product_has_media = true
-  if product.media.size == 0
-    assign product_has_media = false
-  endif
 
   # Build product grid class
   assign product_grid_class = 'product-information__grid'

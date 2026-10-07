@@ -55,6 +55,30 @@
     }
   }
 
+  /* Little Row base row: copyright on the left, social icons on the right, kept on one row at
+     every width. Colours, size, case and the divider come from the section and block settings. */
+  .footer-utilities .utilities--blocks-2 {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    & > :last-child {
+      justify-self: end;
+    }
+  }
+
+  .footer-utilities .footer-utilities__group-copyright {
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+  }
+
+  .footer-utilities .social-icons__wrapper {
+    gap: var(--gap-md);
+  }
+
   /* Dynamic positioning based on number of blocks */
   @media screen and (min-width: 750px) {
     /* 1 block: Single column, left aligned */
@@ -187,6 +211,9 @@
     },
     {
       "type": "social-links"
+    },
+    {
+      "type": "payment-icons"
     }
   ],
   "presets": [
