@@ -105,7 +105,7 @@
           ".password-footer__powered-by {display: none;}"
         ],
         "settings": {
-          "background_color": "{{ settings.color_palette.color1 }}"
+          "background_color": "{{ settings.color_palette.background }}"
         }
       }
     },
