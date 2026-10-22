@@ -381,6 +381,16 @@ Horizon's sold-out button becomes an enabled **"notify me"** button (bell icon) 
 - **Amp's own inline button is hidden** (`#BIS_trigger, .BIS_trigger { display: none !important }`, a `{% style %}` in `blocks/add-to-cart.liquid` while the setting is on). Amp's `detectVariant()` reads the URL's `?variant=`, which Horizon never updates on a size change, so its button stays shown or hidden for the size the page loaded on. It re-injects itself if removed, so hide it rather than delete it. Amp's widget script is `backinstock.useamp.com/widget/275674_1790103261.js`.
 - Notify Me's public API is read-only, so it can't replace Amp here.
 
+### Pre-order button
+- **Theme setting `preorder_button`** ("Pre-order on continue selling variants", Theme settings > Buttons > Sold out button, on in `settings_data.json`).
+- **`snippets/util-preorder-label.liquid`** echoes the button text when the variant is available, tracked by Shopify, `inventory_policy == 'continue'`, **whatever the stock** (owner's choice, 2026-10-22: in-stock units of a continue-selling variant are pre-order stock); otherwise nothing. The text is `content.preorder_with_date` ("pre-order - 14 november", `%-d %B` lowercased) when the date is today or later, else `content.preorder` ("pre-order").
+- **Date metafield `custom.preorder_date`** (date) on the **variant**, falling back to the **product** (created in admin by the owner).
+- **Text fallback `custom.preorder_text`** (single line text, variant then product): used when there is no date or it has passed, as `content.preorder_with_note` ("pre-order - ships november"). The text is shown as typed (keep it lowercase). Precedence: future date, then text, then "pre-order".
+- Used by `blocks/add-to-cart.liquid` (replaces `add_to_cart_text` while `can_add_to_cart`; covers the quick add modal) and the sticky bar in `sections/product-information.liquid`. Variant changes need no JS: both buttons' children are morphed from the re-rendered section.
+- `snippets/variant-low-stock.liquid` skips pre-order variants, so "only {n} left" never shows beside a pre-order button.
+- **Line item property:** `blocks/add-to-cart.liquid` renders a hidden `properties[Pre-order]` input (`content.preorder_property`, `data-preorder-property`) inside the product form, valued by `util-preorder-label` with `property_value: true` ("31 october", "ships november", or `content.preorder_property_yes` "yes"). It is always rendered and disabled when the size isn't a pre-order; `product-form.js` `#syncPreorderProperty()` copies its value and `disabled` from the re-rendered section on variant change. It shows in the cart, checkout and order, and is included in personalised adds (`#buildPersonalisedPayload` copies every property).
+- Not on collection or search card quick-add buttons.
+
 ### Size guide (PDP accordion)
 **Store objects (created via the Admin API, 2026-09-25):**
 - **Metaobject definition `size_guide`** (storefront PUBLIC_READ, display name `name`): `name` (single line, required, admin only), `intro` (multi line), `columns` (list of single line, required, e.g. size, age, height, chest), `rows` (list of single line, required; one row per line, cells split by `|` in column order, e.g. `0-3m | newborn | 56-62 cm | 42 cm`), `note` (single line).
@@ -449,3 +459,4 @@ One gift box per order, added from the cart, no gift message (owner's choices, 2
 - **Class-based preset styles** (`.h3`, `.paragraph`) lose to higher-specificity section CSS. When overriding typography, exclude elements that carry a preset class.
 - **`predictive-search.js` reuses the same keydown handler** on the input and the form; check `document.activeElement` before hijacking keys.
 - **`--color-shadow-rgb` is only defined by `brand-tokens`.** Keep it there.
+- **Don't use macOS `sed -i` on theme files while `shopify theme dev` runs.** It writes temp files like `locales/.!5661!es.schema.json`; theme dev tries to upload one, fails ("contains illegal characters") and serves a 500 "Failed to Upload Theme Files" page until it is restarted. Use `perl -pi` or a script that writes the file in place.

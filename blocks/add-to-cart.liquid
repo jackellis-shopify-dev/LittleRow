@@ -24,6 +24,26 @@
     assign notify_me = true
   endif
 -%}
+{%- comment -%} Little Row: continue-selling variants with no stock read "pre-order" (see util-preorder-label) {%- endcomment -%}
+{%- capture preorder_label -%}
+  {%- render 'util-preorder-label',
+    product_resource: closest.product,
+    variant: closest.product.selected_or_first_available_variant
+  -%}
+{%- endcapture -%}
+{%- capture preorder_property_value -%}
+  {%- render 'util-preorder-label',
+    product_resource: closest.product,
+    variant: closest.product.selected_or_first_available_variant,
+    property_value: true
+  -%}
+{%- endcapture -%}
+{%- liquid
+  if can_add_to_cart and preorder_label != blank
+    assign add_to_cart_text = preorder_label
+  endif
+  assign preorder_property_name = 'content.preorder_property' | t
+-%}
 {%- if settings.notify_me_when_sold_out and request.page_type == 'product' -%}
   {%- comment -%}
     Little Row: the Amp widget injects its own notify button (#BIS_trigger) beside this one. It
@@ -55,6 +75,20 @@
     notify_me: notify_me,
     data_testid: 'standalone-add-to-cart'
   %}
+  {%- comment -%}
+    Little Row: marks the cart line as a pre-order (util-preorder-label). Always rendered, disabled
+    when the size isn't a pre-order; product-form.js copies value and disabled on variant change.
+  {%- endcomment -%}
+  <input
+    type="hidden"
+    name="properties[{{ preorder_property_name | escape }}]"
+    value="{{ preorder_property_value | escape }}"
+    data-preorder-property
+    {% unless can_add_to_cart and preorder_property_value != blank %}
+      disabled
+    {% endunless %}
+  >
+
 </span>
 
 {% schema %}

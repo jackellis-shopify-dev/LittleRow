@@ -2,7 +2,8 @@
   Low-stock note for the selected variant, e.g. "only 2 left in 2-3y". Rendered inside the variant
   picker, which re-renders on every selection, so the note follows the chosen size.
 
-  Shows only when the variant's inventory is tracked by Shopify and between 1 and `threshold`.
+  Shows only when the variant's inventory is tracked by Shopify and between 1 and `threshold`, and
+  never for a pre-order variant (see util-preorder-label), whose stock count doesn't limit sales.
 
   @param {object} product - The product whose selected (or first available) variant is checked.
   @param {object} product_option - The option whose selected value names the variant (e.g. Size).
@@ -16,8 +17,11 @@
   assign variant = product.selected_or_first_available_variant
   assign quantity = variant.inventory_quantity | default: 0
 -%}
+{%- capture preorder_label -%}
+  {%- render 'util-preorder-label', product_resource: product, variant: variant -%}
+{%- endcapture -%}
 
-{%- if variant.inventory_management == 'shopify' and quantity > 0 and quantity <= threshold -%}
+{%- if preorder_label == blank and variant.inventory_management == 'shopify' and quantity > 0 and quantity <= threshold -%}
   <span
     class="variant-low-stock"
     role="status"
