@@ -1467,6 +1467,13 @@
         "label": "t:settings.notify_me_when_sold_out",
         "info": "t:info.notify_me_when_sold_out",
         "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "preorder_button",
+        "label": "t:settings.preorder_button",
+        "info": "t:info.preorder_button",
+        "default": false
       }
     ]
   },

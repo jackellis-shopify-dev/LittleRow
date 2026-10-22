@@ -900,6 +900,7 @@ class ProductFormComponent extends Component {
         morph(currentAddToCartButton, newAddToCartButton);
         this.#syncNotifyMeState(currentAddToCartButton, newAddToCartButton);
       }
+      this.#syncPreorderProperty(html);
 
       if (acceleratedCheckoutButtonContainer) {
         if (resource == null || resource.available == false) {
@@ -1208,6 +1209,22 @@ class ProductFormComponent extends Component {
 
     // #onProductSelect disables the button for an unavailable variant; notify me stays clickable.
     if (button.hasAttribute('data-notify-me')) button.disabled = false;
+  }
+
+  /**
+   * Little Row: copies the pre-order line item property (blocks/add-to-cart.liquid) from the
+   * re-rendered section, so it follows the selected size.
+   * @param {Document} html - The re-rendered section.
+   */
+  #syncPreorderProperty(html) {
+    const input = /** @type {HTMLInputElement | null} */ (this.querySelector('[data-preorder-property]'));
+    const newInput = /** @type {HTMLInputElement | null} */ (
+      html.querySelector('product-form-component [data-preorder-property]')
+    );
+    if (!input) return;
+
+    input.value = newInput?.value ?? '';
+    input.disabled = !newInput || newInput.disabled;
   }
 
   /**

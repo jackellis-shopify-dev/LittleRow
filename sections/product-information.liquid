@@ -37,6 +37,10 @@
   {%- capture sticky_notify_me -%}
     {%- render 'util-notify-me', product_resource: product, variant: current_variant -%}
   {%- endcapture -%}
+  {%- comment -%} Little Row: pre-order label, like the main button (see util-preorder-label) {%- endcomment -%}
+  {%- capture sticky_preorder_label -%}
+    {%- render 'util-preorder-label', product_resource: product, variant: current_variant -%}
+  {%- endcapture -%}
 
   <sticky-add-to-cart
     class="sticky-add-to-cart"
@@ -148,7 +152,9 @@
           {% endif %}
           <span class="add-to-cart-text__content">
             <span>
-              {%- if current_variant.available -%}
+              {%- if current_variant.available and sticky_preorder_label != blank -%}
+                {{- sticky_preorder_label -}}
+              {%- elsif current_variant.available -%}
                 {{- 'products.product.add_to_cart' | t -}}
               {%- elsif current_variant == blank -%}
                 {{- 'products.product.unavailable' | t -}}
