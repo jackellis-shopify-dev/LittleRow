@@ -1,0 +1,50 @@
+{%- doc -%}
+  Little Row: echoes the buy button text for a pre-order, or nothing. A variant is a pre-order when
+  the "Pre-order on continue selling variants" theme setting is on and it is tracked by Shopify and
+  set to continue selling when out of stock, whatever its stock (owner's choice). The date comes from the variant's
+  custom.preorder_date metafield, falling back to the product's. Without a date (or once it has
+  passed) the custom.preorder_text metafield is used instead, e.g. "ships november", again variant
+  first. With neither it reads "pre-order" alone.
+
+  @param {object} product_resource - The product the button belongs to.
+  @param {object} variant - The variant the button would add.
+  @param {boolean} [property_value] - Echo the line item property value instead ("31 october",
+    "ships november", or "yes" with neither).
+
+  @example
+  {%- capture preorder_label -%}{% render 'util-preorder-label', product_resource: product, variant: variant %}{%- endcapture -%}
+{%- enddoc -%}
+
+{%- liquid
+  if settings.preorder_button and variant != blank and variant.available
+    if variant.inventory_management == 'shopify' and variant.inventory_policy == 'continue'
+      assign preorder_date = variant.metafields.custom.preorder_date.value | default: product_resource.metafields.custom.preorder_date.value
+      assign today = 'now' | date: '%Y%m%d' | plus: 0
+      assign preorder_day = 0
+      if preorder_date != blank
+        assign preorder_day = preorder_date | date: '%Y%m%d' | plus: 0
+      endif
+
+      assign preorder_text = variant.metafields.custom.preorder_text.value | default: product_resource.metafields.custom.preorder_text.value
+
+      if preorder_day >= today
+        assign formatted_date = preorder_date | date: '%-d %B' | downcase
+        if property_value
+          echo formatted_date
+        else
+          echo 'content.preorder_with_date' | t: date: formatted_date
+        endif
+      elsif preorder_text != blank
+        if property_value
+          echo preorder_text
+        else
+          echo 'content.preorder_with_note' | t: note: preorder_text
+        endif
+      elsif property_value
+        echo 'content.preorder_property_yes' | t
+      else
+        echo 'content.preorder' | t
+      endif
+    endif
+  endif
+-%}
