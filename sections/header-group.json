@@ -17,7 +17,7 @@
         "announcement_BxgCk9": {
           "type": "_announcement",
           "settings": {
-            "text": "free delivery on orders over £65",
+            "text": "free delivery on all orders",
             "link": "",
             "font": "var(--font-subheading--family)",
             "font_size": "0.75rem",
