@@ -77,7 +77,7 @@
                 "delivery_text_1": {
                   "type": "text",
                   "settings": {
-                    "text": "<p>free uk standard delivery on orders over £65. otherwise it is £3.99.</p>",
+                    "text": "<p>free uk standard delivery on all orders. express delivery is £4.99</p>",
                     "width": "100%",
                     "max_width": "normal",
                     "alignment": "left",
