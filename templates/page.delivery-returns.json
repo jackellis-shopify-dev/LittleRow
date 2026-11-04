@@ -155,7 +155,7 @@
                 "delivery_text_3": {
                   "type": "text",
                   "settings": {
-                    "text": "<p>not yet, but we are working on it.</p>",
+                    "text": "<p>yes we ship globally</p>",
                     "width": "100%",
                     "max_width": "normal",
                     "alignment": "left",
