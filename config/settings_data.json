@@ -121,6 +121,11 @@
         "type": "shopify://apps/klaviyo-email-marketing-sms/blocks/klaviyo-onsite-embed/2632fe16-c075-4321-a88b-50b567f42507",
         "disabled": false,
         "settings": {}
+      },
+      "10653092989201779468": {
+        "type": "shopify://apps/managed-markets/blocks/adaptive_pricing_banner/01a04a8f-9b00-7a7d-a048-ecae6789cdfc",
+        "disabled": false,
+        "settings": {}
       }
     },
     "color_palette": {
