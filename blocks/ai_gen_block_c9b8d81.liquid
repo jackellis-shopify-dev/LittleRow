@@ -1,0 +1,101 @@
+{% doc %}
+  @prompt
+    Create a basket free-delivery progress message for Little Row with an editable threshold of £40 GBP. Show 'Spend [remaining amount] more to qualify for free delivery' when the basket total after discounts is below £40, and 'You’ve qualified for free delivery' at £40 or above. Calculate and format the remaining amount dynamically and update whenever basket quantities or contents change. Match the theme's typography and colours. Make text and threshold editable. Intended placement is in the basket above checkout, including the cart drawer where supported. Do not alter the announcement bar or shipping rates.
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+{% assign threshold_pence = block.settings.threshold_amount | times: 100 %}
+{% assign initial_remaining = threshold_pence | minus: cart.total_price %}
+{% style %}
+  .ai-delivery-progress-{{ ai_gen_id }} {
+    display: block;
+    width: {{ block.settings.desktop_width_percent }}%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    color: {{ block.settings.text_color }};
+    background: {{ block.settings.background_color }};
+    font-family: var(--font-paragraph--family, inherit);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .ai-delivery-progress-{{ ai_gen_id }}__message { margin: 0; }
+{% endstyle %}
+<cart-delivery-progress-{{ ai_gen_id }}
+  class="ai-delivery-progress-{{ ai_gen_id }}"
+  data-threshold="{{ threshold_pence }}"
+  data-below-template="{{ block.settings.below_message | escape }}"
+  data-qualified-message="{{ block.settings.qualified_message | escape }}"
+  data-currency="GBP"
+  {{ block.shopify_attributes }}
+>
+  <p class="ai-delivery-progress-{{ ai_gen_id }}__message" aria-live="polite" aria-atomic="true">
+    {% if cart.total_price >= threshold_pence %}
+      {{ block.settings.qualified_message }}
+    {% else %}
+      {{ block.settings.below_message | replace: '[remaining amount]', initial_remaining | money_without_currency | prepend: '£' }}
+    {% endif %}
+  </p>
+</cart-delivery-progress-{{ ai_gen_id }}>
+<script>
+  (function() {
+    const tagName = 'cart-delivery-progress-{{ ai_gen_id }}';
+    if (customElements.get(tagName)) return;
+    class CartDeliveryProgress extends HTMLElement {
+      connectedCallback() {
+        this.message = this.querySelector('.ai-delivery-progress-{{ ai_gen_id }}__message');
+        this.threshold = Number(this.dataset.threshold || 4000);
+        this.formatter = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' });
+        this.refresh = this.refresh.bind(this);
+        this.refresh();
+        this.addEventListener('cart:updated', this.refresh);
+        this.addEventListener('change', this.refresh);
+        document.addEventListener('cart:updated', this.refresh);
+        document.addEventListener('cart:change', this.refresh);
+        document.addEventListener('shopify:section:load', this.refresh);
+        this.timer = window.setInterval(this.refresh, 2500);
+      }
+      disconnectedCallback() {
+        window.clearInterval(this.timer);
+        document.removeEventListener('cart:updated', this.refresh);
+        document.removeEventListener('cart:change', this.refresh);
+        document.removeEventListener('shopify:section:load', this.refresh);
+      }
+      async refresh() {
+        if (this.loading) return;
+        this.loading = true;
+        try {
+          const response = await fetch((window.Shopify && Shopify.routes && Shopify.routes.root ? Shopify.routes.root : '/') + 'cart.js', { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+          if (!response.ok) return;
+          const cart = await response.json();
+          if (cart.total_price >= this.threshold) {
+            this.message.textContent = this.dataset.qualifiedMessage;
+          } else {
+            const remaining = this.formatter.format((this.threshold - cart.total_price) / 100);
+            this.message.textContent = this.dataset.belowTemplate.replace('[remaining amount]', remaining);
+          }
+        } catch (error) {
+          this.loading = false;
+          return;
+        }
+        this.loading = false;
+      }
+    }
+    customElements.define(tagName, CartDeliveryProgress);
+  })();
+</script>
+{% schema %}
+{
+  "name": "Free delivery progress",
+  "settings": [
+    { "type": "range", "id": "desktop_width_percent", "label": "Desktop width", "min": 50, "max": 100, "step": 5, "unit": "%", "default": 100 },
+    { "type": "range", "id": "threshold_amount", "label": "Threshold (GBP)", "min": 10, "max": 200, "step": 5, "unit": "£", "default": 40 },
+    { "type": "text", "id": "below_message", "label": "Below threshold message", "default": "Spend [remaining amount] more to qualify for free delivery" },
+    { "type": "text", "id": "qualified_message", "label": "Qualified message", "default": "You’ve qualified for free delivery" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#1A1A1A" },
+    { "type": "color", "id": "background_color", "label": "Background", "default": "#F2EFE6" }
+  ],
+  "presets": [{ "name": "Free delivery progress" }],
+  "tag": null,
+  "class": "free-delivery-progress"
+}
+{% endschema %}
