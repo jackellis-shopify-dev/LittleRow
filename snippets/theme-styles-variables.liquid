@@ -459,7 +459,8 @@
     --style-border-width-inputs: {{ settings.input_border_width }}px;
     --style-border-radius-popover: {{ settings.popover_border_radius }}px;
     --style-border-popover: {{ settings.popover_border_width }}px solid {{ settings.popover_border_color }};
-    --style-border-drawer: 1px solid {{ settings.drawer_border_color }};
+    {%- # Little Row: Theme settings > Drawers > Show border can turn the drawer edge off -%}
+    --style-border-drawer: {% if settings.drawer_border == false %}none{% else %}1px solid {{ settings.drawer_border_color }}{% endif %};
     --style-border-swatch-opacity: {{ settings.variant_swatch_border_opacity }}%;
     --style-border-swatch-width: {{ settings.variant_swatch_border_width }}px;
     --style-border-swatch-style: {{ settings.variant_swatch_border_style }};

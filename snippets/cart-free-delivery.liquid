@@ -1,0 +1,103 @@
+{%- doc -%}
+  Little Row: the free delivery progress bar in the cart drawer (above the items) and the cart page summary.
+
+  The threshold and both messages come from Theme settings > Cart > Free delivery bar. "[amount]" in the
+  message is replaced by the amount still to spend. It compares the cart total after discounts (what
+  Shopify's order price rates use) with the threshold in the shop's currency. It is only a message:
+  the free rate itself is set in Settings > Shipping and should match.
+
+  It renders nothing when the threshold is blank or 0, or the cart is empty. No JS: the cart section is
+  re-rendered and morphed on every cart change, which updates the text and the bar.
+
+  @example
+  {% render 'cart-free-delivery' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign free_delivery_threshold = settings.free_delivery_threshold | times: 100 | round
+-%}
+
+{%- if free_delivery_threshold > 0 and cart != empty -%}
+  {%- liquid
+    assign free_delivery_remaining = free_delivery_threshold | minus: cart.total_price
+    assign free_delivery_progress = cart.total_price | times: 1.0 | divided_by: free_delivery_threshold | at_most: 1 | round: 3
+    if free_delivery_remaining > 0
+      assign free_delivery_amount = free_delivery_remaining | money | prepend: '<strong>' | append: '</strong>'
+      assign free_delivery_message = settings.free_delivery_message | escape | replace: '[amount]', free_delivery_amount
+    else
+      assign free_delivery_message = settings.free_delivery_qualified_message | escape
+    endif
+  -%}
+
+  <div
+    class="cart-free-delivery cart-primary-typography{% if free_delivery_remaining <= 0 %} cart-free-delivery--qualified{% endif %}"
+    style="--free-delivery-progress: {{ free_delivery_progress }};"
+  >
+    <p
+      class="cart-free-delivery__message"
+      role="status"
+    >
+      {{ free_delivery_message }}
+    </p>
+    <div
+      class="cart-free-delivery__track"
+      aria-hidden="true"
+    >
+      <div class="cart-free-delivery__fill"></div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .cart-free-delivery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-xs);
+    font-size: var(--font-size--sm);
+  }
+
+  .cart-free-delivery__message {
+    margin: 0;
+  }
+
+  .cart-free-delivery__message strong {
+    font-weight: 600;
+  }
+
+  .cart-free-delivery__track {
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+  }
+
+  .cart-free-delivery__fill {
+    height: 100%;
+    border-radius: inherit;
+    background-color: var(--color-foreground);
+    transform: scaleX(var(--free-delivery-progress, 0));
+    transform-origin: left;
+  }
+
+  [dir='rtl'] .cart-free-delivery__fill {
+    transform-origin: right;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .cart-free-delivery__fill {
+      transition: transform var(--animation-speed-slow) var(--ease-out-cubic);
+    }
+  }
+
+  /* Drawer: a fixed row between the drawer header and the scrolling items */
+  .cart-drawer__inner .cart-free-delivery {
+    flex-shrink: 0;
+    padding-inline: var(--cart-drawer-padding);
+    padding-block: 0 var(--padding-lg);
+  }
+
+  /* Cart page: the first row of the summary column (a centred flex column with its own gap) */
+  .cart-summary__inner .cart-free-delivery {
+    width: 100%;
+  }
+{% endstylesheet %}

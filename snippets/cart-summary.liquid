@@ -8,6 +8,15 @@
 {% render 'text-component-shimmer-styles' %}
 {% render 'cart-typography-styles' %}
 
+{%- liquid
+  # Little Row: the "make it a gift?" card heads the summary, so it stays in the drawer's sticky footer
+  assign gift_box_context = 'page'
+  if section_id == 'cart-drawer-section'
+    assign gift_box_context = 'drawer'
+  endif
+  render 'cart-gift-box', context: gift_box_context
+-%}
+
 <div class="cart-totals">
   {% # We need to keep this node in place to allow morphing to work properly # %}
   <div class="cart-totals__original-container cart-primary-typography">
@@ -41,20 +50,8 @@
     {%- endif -%}
   </div>
 
-  {%- comment -%} Little Row: the gift box option is the first row; it renders nothing when unavailable {%- endcomment -%}
-  {%- capture cart_gift_box -%}
-    {%- render 'cart-gift-box' -%}
-  {%- endcapture -%}
-  {%- assign cart_gift_box = cart_gift_box | strip -%}
-
-  {% if settings.show_cart_note or settings.show_add_discount_code or cart_gift_box != blank %}
+  {% if settings.show_cart_note or settings.show_add_discount_code %}
     <div class="cart-actions">
-      {% if cart_gift_box != blank %}
-        {{ cart_gift_box }}
-        {% if settings.show_cart_note or settings.show_add_discount_code %}
-          <div class="cart-actions__divider"></div>
-        {% endif %}
-      {% endif %}
       {% if settings.show_cart_note %}
         <script
           type="module"

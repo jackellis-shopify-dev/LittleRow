@@ -3,7 +3,7 @@ import { fetchConfig } from '@theme/utilities';
 import { CartErrorEvent, CartLinesUpdateEvent } from '@shopify/events';
 
 /**
- * Little Row: the "add a gift box" tick box in the cart summary.
+ * Little Row: the "make it a gift?" card under the cart items (its tick box adds and removes the box).
  * The gift box is a product added as a single cart line, hidden in the cart list.
  *
  * @typedef {object} Refs

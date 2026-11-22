@@ -169,6 +169,7 @@
     "personalisation_preview_placeholder": "nora",
     "personalisation_price_note": "+ {{ price }} name on label",
     "gift_box_label": "add a gift box",
+    "gift_box_heading": "make it a gift?",
     "gift_box_price": "+ {{ price }}",
     "colour_swatches_label": "colour - {{ colour }}",
     "colour_swatches_single": "one colourway",

@@ -31,6 +31,8 @@
   {{ block.shopify_attributes }}
 >
   <div class="{{ cart_summary_inner_class }}">
+    {%- comment -%} Little Row: free delivery bar at the top of the summary {%- endcomment -%}
+    {%- render 'cart-free-delivery' -%}
     {% render 'cart-summary', accelerated_checkout_buttons_layout: 'vertical', section_id: section.id %}
   </div>
 </div>

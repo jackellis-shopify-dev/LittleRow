@@ -1573,6 +1573,12 @@
         "info": "t:info.gift_box_product"
       },
       {
+        "type": "color",
+        "id": "gift_box_background",
+        "label": "t:settings.gift_box_background",
+        "default": "#E8E3D6"
+      },
+      {
         "type": "checkbox",
         "id": "show_installments",
         "label": "t:settings.installments",
@@ -1590,6 +1596,64 @@
         "id": "empty_cart_button_link",
         "label": "t:settings.empty_cart_button_link",
         "default": "/collections/all"
+      },
+      {
+        "type": "header",
+        "content": "t:content.free_delivery_bar"
+      },
+      {
+        "type": "number",
+        "id": "free_delivery_threshold",
+        "label": "t:settings.free_delivery_threshold",
+        "info": "t:info.free_delivery_threshold",
+        "default": 40
+      },
+      {
+        "type": "text",
+        "id": "free_delivery_message",
+        "label": "t:settings.free_delivery_message",
+        "info": "t:info.free_delivery_message",
+        "default": "spend [amount] more for free delivery"
+      },
+      {
+        "type": "text",
+        "id": "free_delivery_qualified_message",
+        "label": "t:settings.free_delivery_qualified_message",
+        "default": "you've qualified for free delivery"
+      },
+      {
+        "type": "header",
+        "content": "t:content.cart_recommendations"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_recommendations",
+        "label": "t:settings.cart_recommendations",
+        "info": "t:info.cart_recommendations",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "cart_recommendations_heading",
+        "label": "t:settings.heading",
+        "default": "you may also like",
+        "visible_if": "{{ settings.cart_recommendations }}"
+      },
+      {
+        "type": "collection",
+        "id": "cart_recommendations_collection",
+        "label": "t:settings.cart_recommendations_collection",
+        "info": "t:info.cart_recommendations_collection"
+      },
+      {
+        "type": "range",
+        "id": "cart_recommendations_count",
+        "label": "t:settings.cart_recommendations_count",
+        "min": 2,
+        "max": 10,
+        "step": 1,
+        "default": 6,
+        "visible_if": "{{ settings.cart_recommendations }}"
       },
       {
         "type": "header",
@@ -1707,6 +1771,13 @@
         "label": "t:settings.border_color",
         "default": "{{ settings.color_palette.foreground }}",
         "alpha": true
+      },
+      {
+        "type": "checkbox",
+        "id": "drawer_border",
+        "label": "t:settings.drawer_border",
+        "info": "t:info.drawer_border",
+        "default": true
       },
       {
         "type": "checkbox",

@@ -141,6 +141,24 @@
     fetchpriority="low"
   ></script>
 {% endif %}
+{%- comment -%}
+  Little Row: loaded on every page, like cart-discount.js, because these elements first appear in the cart
+  through a section morph (e.g. the first add to an empty cart), and scripts arriving that way never run.
+{%- endcomment -%}
+{% if settings.gift_box_product != blank %}
+  <script
+    src="{{ 'cart-gift-box.js' | asset_url }}"
+    type="module"
+    fetchpriority="low"
+  ></script>
+{% endif %}
+{% if settings.cart_recommendations and settings.cart_type == 'drawer' %}
+  <script
+    src="{{ 'cart-recommendations.js' | asset_url }}"
+    type="module"
+    fetchpriority="low"
+  ></script>
+{% endif %}
 
 <script
   src="{{ 'dialog.js' | asset_url }}"

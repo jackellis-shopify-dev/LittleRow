@@ -1,20 +1,28 @@
 {%- doc -%}
-  Little Row: the "add a gift box" option in the cart summary (drawer and cart page).
+  Little Row: the "make it a gift?" card at the top of the cart summary: the drawer's sticky footer and the
+  cart page's summary column.
 
   The gift box is a real product (Theme settings > Cart > Gift box product) added as a cart line,
   one per order, at the product's price. Its row is hidden in the cart list (see cart-products), so
-  this tick box is how it is added, shown and removed. Renders nothing when no product is set, the
-  product is unavailable or the cart is empty.
+  this card is how it is added, shown and removed. assets/cart-gift-box.js is loaded globally in scripts.liquid,
+  since the card first arrives through a morph when an empty cart gets its first item. The image is the product's featured media and the
+  text under the heading is its description, both edited on the product in admin. The background is
+  Theme settings > Cart > Gift box background.
+
+  Renders nothing when no product is set, the product is unavailable or the cart is empty.
+
+  @param {string} context - 'drawer' or 'page', keeps the tick box id unique when both are on the page
 
   @example
-  {% render 'cart-gift-box' %}
+  {% render 'cart-gift-box', context: 'drawer' %}
 {%- enddoc -%}
 
 {%- liquid
-  assign gift_box_variant = settings.gift_box_product.selected_or_first_available_variant
+  assign gift_box_product = settings.gift_box_product
+  assign gift_box_variant = gift_box_product.selected_or_first_available_variant
   assign gift_box_line = null
   for item in cart.items
-    if item.product_id == settings.gift_box_product.id
+    if item.product_id == gift_box_product.id
       assign gift_box_line = item
       break
     endif
@@ -22,42 +30,130 @@
 -%}
 
 {%- if gift_box_variant.available and cart != empty -%}
-  <script
-    type="module"
-    src="{{ 'cart-gift-box.js' | asset_url }}"
-  ></script>
+  {%- render 'cart-typography-styles' -%}
+  {%- liquid
+    assign gift_box_checked = false
+    if gift_box_line
+      assign gift_box_checked = true
+    endif
+    assign gift_box_image = gift_box_product.featured_media.preview_image
+    assign gift_box_description = gift_box_product.description | strip_html | strip | truncatewords: 24
+    assign gift_box_label = 'content.gift_box_label' | t
+    assign gift_box_price = gift_box_variant.price | money
+    assign gift_box_input_id = 'cart-gift-box-' | append: context
+    assign gift_box_image_sizes = settings.cart_thumbnail_width | default: 120 | append: 'px'
+  -%}
+
 
   <cart-gift-box
-    class="cart-gift-box cart-primary-typography"
+    class="cart-gift-box{% if gift_box_image == blank %} cart-gift-box--no-media{% endif %}"
+    style="--gift-box-background: {{ settings.gift_box_background }}; --cart-thumbnail-width: {{ settings.cart_thumbnail_width | default: 120 }}px;"
     data-variant-id="{{ gift_box_variant.id }}"
     data-line-key="{{ gift_box_line.key }}"
     {% if gift_box_line and cart.items.size == 1 %}
       data-only-item
     {% endif %}
   >
-    {%- liquid
-      assign gift_box_checked = false
-      if gift_box_line
-        assign gift_box_checked = true
-      endif
-      assign gift_box_label = 'content.gift_box_label' | t
-      render 'checkbox', id: 'cart-gift-box', name: 'gift_box', value: gift_box_variant.id, label: gift_box_label, checked: gift_box_checked, disabled: false, events: 'on:change="/toggle"', inputRef: 'checkbox'
-    -%}
-    {%- assign gift_box_price = gift_box_variant.price | money -%}
-    <span class="cart-gift-box__price cart-secondary-typography">
-      {{- 'content.gift_box_price' | t: price: gift_box_price -}}
-    </span>
+    {%- if gift_box_image != blank -%}
+      <div class="cart-gift-box__media">
+        {{-
+          gift_box_image
+          | image_url: width: 320
+          | image_tag:
+            widths: '120, 240, 320',
+            sizes: gift_box_image_sizes,
+            alt: '',
+            loading: 'lazy',
+            class: 'cart-gift-box__image'
+        -}}
+      </div>
+    {%- endif -%}
+
+    <div class="cart-gift-box__content">
+      <p class="cart-gift-box__heading">{{ 'content.gift_box_heading' | t }}</p>
+      {%- if gift_box_description != blank -%}
+        <p class="cart-gift-box__description">{{ gift_box_description }}</p>
+      {%- endif -%}
+
+      <div class="cart-gift-box__option cart-primary-typography">
+        {%- render 'checkbox',
+          id: gift_box_input_id,
+          name: 'gift_box',
+          value: gift_box_variant.id,
+          label: gift_box_label,
+          checked: gift_box_checked,
+          disabled: false,
+          events: 'on:change="/toggle"',
+          inputRef: 'checkbox'
+        -%}
+        <span class="cart-gift-box__price cart-secondary-typography">
+          {{- 'content.gift_box_price' | t: price: gift_box_price -}}
+        </span>
+      </div>
+    </div>
   </cart-gift-box>
 {%- endif -%}
 
 {% stylesheet %}
+  /* Compact, because it heads the drawer's sticky footer (Horizon un-sticks a footer that grows too tall) */
   .cart-gift-box {
+    display: grid;
+    /* Same image column as the cart items (cart-products), from Theme settings > Cart > Thumbnail width */
+    grid-template-columns: clamp(2.5rem, 30%, var(--cart-thumbnail-width, 7.5rem)) 1fr;
+    width: 100%;
+    background-color: var(--gift-box-background, var(--surface-sunken));
+    overflow: hidden;
+  }
+
+  .cart-gift-box--no-media {
+    grid-template-columns: 1fr;
+  }
+
+  .cart-gift-box__media {
+    position: relative;
+    min-height: 100%;
+  }
+
+  .cart-gift-box__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .cart-gift-box__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-3xs);
+    padding: var(--padding-sm) var(--padding-lg) var(--padding-2xs);
+    min-width: 0;
+  }
+
+  .cart-gift-box__heading {
+    margin: 0;
+    font-family: var(--font-subheading--family);
+    font-weight: var(--font-subheading--weight);
+    font-size: var(--font-size--md);
+  }
+
+  .cart-gift-box__description {
+    margin: 0;
+    font-size: var(--font-size--xs);
+    color: var(--color-foreground-subdued);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .cart-gift-box__option {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--gap-sm);
     min-height: var(--minimum-touch-target);
-    padding-block: var(--padding-xs);
     font-size: var(--font-size--sm);
     font-weight: 500;
   }
@@ -65,6 +161,6 @@
   .cart-gift-box__price {
     flex-shrink: 0;
     font-weight: 400;
-    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+    color: var(--color-foreground-subdued);
   }
 {% endstylesheet %}
