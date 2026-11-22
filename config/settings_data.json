@@ -75,6 +75,8 @@
     "show_add_discount_code": true,
     "gift_box_product": "gift-box",
     "show_installments": false,
+    "cart_recommendations_collection": "frontpage",
+    "drawer_border": false,
     "drawer_overlay_desktop": true,
     "icon_stroke": "default",
     "palette_input_background": "#FFFFFF",

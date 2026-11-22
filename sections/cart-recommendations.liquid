@@ -1,0 +1,217 @@
+{%- comment -%}
+  Little Row: the products for "you may also like" in the cart drawer. Not used in any template: it is
+  only rendered by Shopify's recommendations endpoint (section_id=cart-recommendations), fetched by
+  assets/cart-recommendations.js, which moves the [data-cart-recommendations] contents into the drawer.
+
+  Shopify's related products come first, then the fallback collection (Theme settings > Cart). Pieces
+  already in the cart, unavailable products and the gift box are left out, up to the product count.
+  The spacing around the row is in snippets/cart-recommendations.liquid.
+{%- endcomment -%}
+
+{%- liquid
+  assign max_products = settings.cart_recommendations_count | default: 6
+  assign cart_ids = cart.items | map: 'product_id' | join: ','
+  assign skip_ids = ',' | append: cart_ids | append: ',' | append: settings.gift_box_product.id | append: ','
+
+  assign shown_count = 0
+-%}
+
+<div data-cart-recommendations>
+  {%- capture recommendation_items -%}
+    {%- comment -%}
+      Two passes: Shopify's related products, then the fallback collection. (concat leaves an empty
+      list with these product arrays, so they are looped one after the other.)
+    {%- endcomment -%}
+    {%- for source in (1..2) -%}
+      {%- liquid
+        if source == 1
+          assign source_products = recommendations.products
+        else
+          assign source_products = settings.cart_recommendations_collection.products
+        endif
+      -%}
+    {%- for product in source_products -%}
+      {%- liquid
+        if shown_count >= max_products
+          break
+        endif
+        assign product_key = ',' | append: product.id | append: ','
+        if product.available == false or skip_ids contains product_key
+          continue
+        endif
+        assign skip_ids = skip_ids | append: product.id | append: ','
+        assign shown_count = shown_count | plus: 1
+      -%}
+      <li class="cart-recommendations__item">
+        <a
+          href="{{ product.url }}"
+          class="cart-recommendations__link"
+        >
+          <div class="cart-recommendations__media">
+            {%- if product.featured_media -%}
+              {{-
+                product.featured_media
+                | image_url: width: 480
+                | image_tag:
+                  widths: '160, 240, 320, 480',
+                  sizes: '(min-width: 750px) 170px, 40vw',
+                  loading: 'lazy',
+                  alt: product.featured_media.alt
+              -}}
+            {%- else -%}
+              {%- render 'product-placeholder', product: product -%}
+            {%- endif -%}
+          </div>
+          <span class="cart-recommendations__title">{{ product.title }}</span>
+          {%- render 'price', product_resource: product -%}
+        </a>
+      </li>
+    {%- endfor -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+
+  {%- if shown_count > 0 -%}
+    <div class="cart-recommendations__header">
+      <h2 class="cart-recommendations__heading">{{ settings.cart_recommendations_heading | escape }}</h2>
+      <div class="cart-recommendations__arrows">
+        <button
+          type="button"
+          class="cart-recommendations__arrow button-unstyled"
+          on:click="/scrollPrevious"
+          aria-label="{{ 'accessibility.slideshow_previous' | t }}"
+        >
+          {{- 'icon-chevron-left.svg' | inline_asset_content -}}
+        </button>
+        <button
+          type="button"
+          class="cart-recommendations__arrow button-unstyled"
+          on:click="/scrollNext"
+          aria-label="{{ 'accessibility.slideshow_next' | t }}"
+        >
+          {{- 'icon-chevron-right.svg' | inline_asset_content -}}
+        </button>
+      </div>
+    </div>
+    <ul
+      class="cart-recommendations__list"
+      role="list"
+    >
+      {{ recommendation_items }}
+    </ul>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .cart-recommendations__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-sm);
+    margin-block-end: var(--gap-sm);
+  }
+
+  .cart-recommendations__heading {
+    margin: 0;
+    font-family: var(--font-subheading--family);
+    font-weight: var(--font-subheading--weight);
+    font-size: var(--font-size--md);
+  }
+
+  .cart-recommendations__arrows {
+    display: flex;
+    margin-inline-end: calc(var(--padding-sm) * -1);
+  }
+
+  .cart-recommendations__arrow {
+    display: grid;
+    place-items: center;
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    color: var(--color-foreground);
+  }
+
+  .cart-recommendations__arrow svg {
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+  }
+
+  /* Touch screens swipe the row */
+  @media (hover: none) {
+    .cart-recommendations__arrows {
+      display: none;
+    }
+  }
+
+  /* The row runs to the drawer's edges and snaps cards to the item padding */
+  .cart-recommendations__list {
+    display: flex;
+    gap: var(--gap-sm);
+    margin: 0 calc(var(--cart-drawer-padding) * -1);
+    padding: 0 var(--cart-drawer-padding);
+    scroll-padding-inline: var(--cart-drawer-padding);
+    list-style: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .cart-recommendations__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cart-recommendations__item {
+    flex: 0 0 42%;
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+
+  .cart-recommendations__link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-2xs);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .cart-recommendations__media {
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background-color: var(--surface-sunken);
+  }
+
+  .cart-recommendations__media img,
+  .cart-recommendations__media > * {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .cart-recommendations__title {
+    margin-block-start: var(--margin-2xs);
+    font-size: var(--font-size--sm);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .cart-recommendations__link:hover .cart-recommendations__title {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .cart-recommendations__item .price {
+    font-size: var(--font-size--sm);
+    color: var(--color-foreground-subdued);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.cart_recommendations",
+  "settings": []
+}
+{% endschema %}

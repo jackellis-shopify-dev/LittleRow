@@ -1,0 +1,53 @@
+{%- doc -%}
+  Little Row: "you may also like" in the cart drawer, after the items.
+
+  Renders an empty <cart-recommendations> whose data-url asks Shopify's recommendations endpoint for
+  products related to the newest piece in the cart (gift box and personalisation fee lines skipped),
+  rendered by sections/cart-recommendations.liquid. assets/cart-recommendations.js fetches it (loaded globally in
+  scripts.liquid, since this element first arrives through a morph) once the
+  element scrolls into view and again whenever data-url changes. data-skip-subtree-update keeps the
+  fetched products through the drawer's morph on cart changes, while data-url still updates.
+
+  Theme settings > Cart > Recommendations: on/off, heading, fallback collection, product count. The row's
+  styles are in the section (Shopify bundles section stylesheets on every page).
+
+  @example
+  {% render 'cart-recommendations' %}
+{%- enddoc -%}
+
+{%- if settings.cart_recommendations -%}
+  {%- liquid
+    assign recommendations_anchor = null
+    for item in cart.items
+      if item.product_id == settings.gift_box_product.id or item.parent_relationship.parent != null or item.properties['_personalisation'] == 'fee'
+        continue
+      endif
+      assign recommendations_anchor = item
+      break
+    endfor
+
+    # The cart's product ids are part of the URL so the list refetches (and drops pieces now in the cart) when the cart changes
+    assign recommendations_cart_ids = cart.items | map: 'product_id' | join: '-'
+  -%}
+
+  {%- if recommendations_anchor -%}
+    {%- comment -%} No whitespace inside: the element must stay :empty until products are fetched {%- endcomment -%}
+    <cart-recommendations
+      class="cart-recommendations"
+      data-url="{{ routes.product_recommendations_url }}?product_id={{ recommendations_anchor.product_id }}&limit=10&intent=related&section_id=cart-recommendations&cart={{ recommendations_cart_ids }}"
+      data-skip-subtree-update
+    ></cart-recommendations>
+  {%- endif -%}
+{%- endif -%}
+
+{% stylesheet %}
+  .cart-recommendations {
+    display: block;
+  }
+
+  .cart-recommendations:not(:empty) {
+    margin-block-start: var(--gap-xl);
+    padding-block: var(--gap-xl);
+    border-block-start: var(--style-border-width) solid rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+  }
+{% endstylesheet %}
